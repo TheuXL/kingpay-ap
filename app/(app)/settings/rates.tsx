@@ -1,12 +1,20 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import FloatingMenu from '@/components/ui/FloatingMenu';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import SimularTaxasIcon from '@/images/configurações/simular taxas.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
+import BoletoIcon from '@/images/configurações/selecionar forma de pagamento boleto.svg';
+import CartaoIcon from '@/images/configurações/selecionar forma de pagamento cartão.svg';
+import PixIcon from '@/images/configurações/selecionar forma de pagamento pix.svg';
+import CalcularIcon from '@/images/configurações/botão calcular.svg';
 
 export default function RatesScreen() {
   const router = useRouter();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Pix');
 
   const rates = [
     { name: 'Pix', value: 'R$ 0,50' },
@@ -17,12 +25,13 @@ export default function RatesScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView>
         <ThemedView style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <BackIcon />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Configurações</ThemedText>
+          <ThemedText style={styles.headerTitle}>Taxas</ThemedText>
           <View style={{ width: 24 }} />
         </ThemedView>
 
@@ -47,14 +56,29 @@ export default function RatesScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Simulador de Taxas</Text>
           <View style={styles.simulatorCard}>
+            <View style={styles.simulatorIconContainer}>
+              <SimularTaxasIcon width={550} height={150} />
+            </View>
             <Text style={styles.label}>Digite o valor da transação</Text>
             <TextInput style={styles.input} placeholder="R$ 0,00" keyboardType="numeric" />
             <Text style={styles.label}>Selecione a forma de pagamento</Text>
-            {/* TODO: Add payment method selector */}
+            <View style={styles.paymentMethodSelector}>
+              <TouchableOpacity onPress={() => setSelectedPaymentMethod('Pix')}>
+                <PixIcon style={selectedPaymentMethod !== 'Pix' && styles.inactivePaymentMethod} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSelectedPaymentMethod('Cartao')}>
+                <CartaoIcon style={selectedPaymentMethod !== 'Cartao' && styles.inactivePaymentMethod} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSelectedPaymentMethod('Boleto')}>
+                <BoletoIcon style={selectedPaymentMethod !== 'Boleto' && styles.inactivePaymentMethod} />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.calculateButton}>
+              <CalcularIcon />
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
-      <FloatingMenu />
     </View>
   );
 }
@@ -62,7 +86,7 @@ export default function RatesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -133,5 +157,21 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
     marginBottom: 15,
+  },
+  paymentMethodSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 20,
+  },
+  inactivePaymentMethod: {
+    opacity: 0.5,
+  },
+  calculateButton: {
+    marginTop: 10,
+    alignSelf: 'center',
+  },
+  simulatorIconContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
 });

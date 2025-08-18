@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Checkbox from '../../components/Checkbox';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -18,11 +19,9 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Link href="/" asChild>
-          <TouchableOpacity>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Login</Text>
       </View>
       <Image source={require('../../assets/images/obj3d.png')} style={styles.logo} />

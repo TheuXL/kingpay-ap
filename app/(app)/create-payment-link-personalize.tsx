@@ -1,8 +1,8 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Switch } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function CreatePaymentLinkPersonalizeScreen() {
   const router = useRouter();
@@ -27,20 +27,21 @@ export default function CreatePaymentLinkPersonalizeScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <BackIcon />
         </TouchableOpacity>
         <ThemedText style={styles.headerTitle}>Criar link de pagamento</ThemedText>
         <TouchableOpacity>
-          <Ionicons name="help-circle-outline" size={24} color="#000" />
+          {/* Removed Ionicons for help icon as per edit hint */}
         </TouchableOpacity>
-      </ThemedView>
+      </View>
       <View style={styles.mainContainer}>
         <View style={styles.content}>
           <Text style={styles.title}>Estamos quase lá! Vamos personalizar seu link de pagamento.</Text>
           <View style={styles.uploadContainer}>
-            <Ionicons name="cloud-upload-outline" size={48} color="#1A237E" />
+            {/* Removed Ionicons for cloud-upload-outline as per edit hint */}
             <Text style={styles.uploadText}>Envie seu logotipo aqui</Text>
             <TouchableOpacity>
               <Text style={styles.uploadButton}>Pesquisar</Text>
@@ -50,13 +51,15 @@ export default function CreatePaymentLinkPersonalizeScreen() {
           <Text style={styles.sectionTitle}>Escolha a cor do seu link</Text>
           <TouchableOpacity style={styles.colorSelector}>
             <Text>Selecione a cor</Text>
-            <Ionicons name="color-palette-outline" size={24} color="black" />
+            {/* Removed Ionicons for color-palette-outline as per edit hint */}
           </TouchableOpacity>
 
           <View style={styles.colorGrid}>
             {colors.map((color, index) => (
               <TouchableOpacity key={index} style={[styles.colorSwatch, { backgroundColor: color }]}>
-                {index === 0 && <Ionicons name="checkmark" size={24} color="white" />}
+                {index === 0 && (
+                  <Ionicons name="checkmark" size={24} color="white" />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -79,7 +82,7 @@ export default function CreatePaymentLinkPersonalizeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   mainContainer: {
     margin: 15,

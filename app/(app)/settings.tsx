@@ -1,79 +1,82 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import FloatingMenu from '@/components/ui/FloatingMenu';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '../../constants/Colors';
+
+import ProfileImage from '@/images/configurações/Profile Image Container.svg';
+import EditIcon from '@/images/configurações/edit.svg';
+import MeusDadosIcon from '@/images/configurações/Icon meus dados.svg';
+import DadosEmpresaIcon from '@/images/configurações/Icon dados da empresa.svg';
+import TaxasIcon from '@/images/configurações/Icon taxas.svg';
+import SairContaIcon from '@/images/configurações/Icon sair da conta.svg';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function SettingsScreen() {
   const router = useRouter();
 
   const infoItems = [
     {
-      icon: 'person-outline',
+      icon: <MeusDadosIcon />,
       label: 'Meus dados',
       screen: '/settings/personal-data',
     },
     {
-      icon: 'business-outline',
+      icon: <DadosEmpresaIcon />,
       label: 'Dados da empresa',
       screen: '/settings/company-data',
     },
     {
-      icon: 'pricetag-outline',
+      icon: <TaxasIcon />,
       label: 'Taxas',
       screen: '/settings/rates',
     },
     {
-      icon: 'log-out-outline',
+      icon: <SairContaIcon />,
       label: 'Sair da conta',
       screen: '',
-      textColor: '#dc3545',
+      textColor: Colors.red['01'],
     },
   ];
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView>
         <ThemedView style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <BackIcon />
           </TouchableOpacity>
           <ThemedText style={styles.headerTitle}>Configurações</ThemedText>
           <View style={{ width: 24 }} />
         </ThemedView>
 
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>ST</Text>
+          <View style={styles.avatarContainer}>
+            <ProfileImage />
           </View>
           <Text style={styles.profileName}>Soutech Tecnologia de Pagamentos</Text>
-          <Text style={styles.profileId}>69635d93-560a-4161-8a46-67e4eb58c</Text>
+          <Text style={styles.profileId}>ID: 69635d93-560a-4161-8a46-67e4eb58c</Text>
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.infoSectionTitle}>Informações</Text>
+          <Text style={styles.sectionTitle}>Informações</Text>
           {infoItems.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={styles.infoItem}
               onPress={() => item.screen && router.push(item.screen as any)}
             >
-              <Ionicons
-                name={item.icon as any}
-                size={24}
-                color={item.textColor || '#0052FF'}
-                style={{ marginRight: 15 }}
-              />
-              <Text style={[styles.infoItemText, item.textColor && { color: item.textColor }]}>
-                {item.label}
-              </Text>
-              <Ionicons name="chevron-forward" size={24} color={item.textColor || '#0052FF'} />
+              <View style={styles.infoItemContent}>
+                {item.icon}
+                <Text style={[styles.infoItemText, { color: item.textColor || Colors.black['02'] }]}>{item.label}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={item.textColor || Colors.blue['01']} />
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-      <FloatingMenu />
     </View>
   );
 }
@@ -81,7 +84,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: Colors.white['03'],
   },
   header: {
     flexDirection: 'row',
@@ -90,35 +93,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 10,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: Colors.white['03'],
     textAlign: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: 'black',
+    color: Colors.black['01'],
   },
   profileCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.white['02'],
     borderRadius: 15,
     padding: 20,
     margin: 20,
     alignItems: 'center',
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E0E7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  avatarContainer: {
+    position: 'relative',
     marginBottom: 15,
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#0052FF',
   },
   profileName: {
     fontSize: 18,
@@ -127,32 +120,37 @@ const styles = StyleSheet.create({
   profileId: {
     fontSize: 14,
     color: 'gray',
+    marginTop: 4,
   },
   infoSection: {
-    marginHorizontal: 20,
+    marginTop: 30,
+    paddingHorizontal: 20,
   },
-  infoSectionTitle: {
+  sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: Colors.gray['01'],
     marginBottom: 10,
-    color: '#495057',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    // backgroundColor: Colors.white['01'],
+    // borderRadius: 12,
+    paddingVertical: 16,
+    marginBottom: 12,
+  },
+  infoItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   infoItemText: {
-    flex: 1,
-    marginLeft: 15,
     fontSize: 16,
-    color: '#495057',
+    marginLeft: 16,
   },
   iconContainer: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.white['02'],
     borderRadius: 10,
     padding: 10,
   },

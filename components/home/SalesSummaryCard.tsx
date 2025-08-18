@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 20,
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
   },
   totalSales: {
     fontSize: 28,

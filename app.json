@@ -42,8 +42,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "be779095-4958-4db7-98fd-aa80ecf78488"
+        "projectId": "6ba761e1-af6c-4551-8273-dabb983fff58"
       }
-    }
+    },
+    "owner": "theuxdev"
   }
 }

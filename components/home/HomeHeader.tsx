@@ -4,6 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AccountSwitcher from './AccountSwitcher';
 import HandshakeIcon from '../../images/home/icon handshake.svg';
 import VisibilityIcon from '../../images/home/icon visibility.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function HomeHeader({
   balanceVisible,
@@ -49,6 +50,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.gray['03'],
   },
   userName: {
     fontSize: 16,
@@ -63,5 +66,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
     marginLeft: 10,
+    borderWidth: 1,
+    borderColor: Colors.gray['03'],
   },
 });

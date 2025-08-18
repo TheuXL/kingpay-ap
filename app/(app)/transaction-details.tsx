@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import GerarComprovanteIcon from '../../images/transações/Icon Gerar Comporvante.svg';
 import EstornarIcon from '../../images/transações/Icon Estornar.svg';
 import AguardandoIcon from '../../images/transações/icon aguardando.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function TransactionDetailsScreen() {
   const router = useRouter();
@@ -12,9 +14,9 @@ export default function TransactionDetailsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{fontSize: 24}}>{"<"}</Text>
+          <BackIcon />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transações</Text>
+        <Text style={styles.headerTitle}>Detalhes da transação</Text>
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.buttonsContainer}>
@@ -99,7 +101,7 @@ export default function TransactionDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -108,8 +110,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,

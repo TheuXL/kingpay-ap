@@ -6,6 +6,15 @@ import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import WarningModal from '../../components/ui/WarningModal';
 
+import { Colors } from '@/constants/Colors';
+import BaraDePesquisa from '@/images/link de pagamento/bara de pesquisa.svg';
+import CopiarLink from '@/images/link de pagamento/copiar link.svg';
+import FilterButton from '@/images/link de pagamento/Filter button.svg';
+import IconLinks from '@/images/link de pagamento/Icon links.svg';
+import LinkAtivo from '@/images/link de pagamento/link ativo.svg';
+import InativoIcon from '@/images/link de pagamento/inativo.svg';
+import BackIcon from '@/images/icon_back.svg';
+
 export default function PaymentLinkScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
@@ -22,39 +31,41 @@ export default function PaymentLinkScreen() {
       <ScrollView>
         <ThemedView style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <BackIcon />
           </TouchableOpacity>
           <ThemedText style={styles.headerTitle}>Link de Pagamento</ThemedText>
           <View style={{ width: 24 }} />
         </ThemedView>
 
         <View style={styles.content}>
-          <Image source={require('@/assets/images/corrente.png')} style={styles.mainImage} />
-
+          <View style={styles.mainImageContainer}>
+            <Image source={require('@/images/link de pagamento/topo.png')} style={styles.mainImage} />
+          </View>
           <ThemedText style={styles.title}>Links criados</ThemedText>
           <ThemedText style={styles.subtitle}>
             Gerencie seus links de pagamento e acompanhe suas vendas
           </ThemedText>
 
-          <TouchableOpacity
+          {/* Botão removido para corrigir erro de navegação */}
+          {/* <TouchableOpacity
             style={styles.createLinkButton}
             onPress={() => router.push('/create-payment-link')}
           >
             <ThemedText style={styles.createLinkButtonText}>Criar novo link</ThemedText>
-            <Ionicons name="add" size={24} color="#fff" />
-          </TouchableOpacity>
+            <Ionicons name="add" size={24} color={Colors.white['01']} />
+          </TouchableOpacity> */}
 
           <View style={styles.searchContainer}>
             <View style={styles.searchInputContainer}>
-              
+              <BaraDePesquisa width="100%" />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar links de pagamento"
-                placeholderTextColor="#888"
-              /><Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+                placeholderTextColor={Colors.gray['02']}
+              />
             </View>
             <TouchableOpacity style={styles.filterButton}>
-              <Ionicons name="filter" size={24} color="#000" />
+              <FilterButton />
             </TouchableOpacity>
           </View>
 
@@ -67,25 +78,25 @@ export default function PaymentLinkScreen() {
               }
             }}>
               <View style={styles.linkIconContainer}>
-                <Ionicons name="link" size={24} color="#000" />
+                <IconLinks />
               </View>
               <View style={styles.linkDetails}>
                 <ThemedText style={styles.linkName}>{link.name}</ThemedText>
                 <ThemedText style={styles.linkPrice}>{link.price}</ThemedText>
                 <View style={styles.linkActions}>
-                  <View style={[styles.statusBadge, link.active ? styles.activeBadge : styles.inactiveBadge]}>
-                    <Ionicons name={link.active ? "checkmark-circle" : "close-circle"} size={16} color={link.active ? '#28a745' : '#dc3545'} />
-                    <ThemedText style={[styles.statusText, link.active ? styles.activeText : styles.inactiveText]}>
-                      {link.active ? 'Ativo' : 'Inativo'}
-                    </ThemedText>
-                  </View>
-                  <TouchableOpacity style={[styles.copyButton, !link.active && styles.disabledCopyButton]}>
-                    <Ionicons name="copy-outline" size={16} color={link.active ? '#007bff' : '#aaa'} />
-                    <ThemedText style={[styles.copyButtonText, !link.active && styles.disabledCopyButtonText]}>Copiar link</ThemedText>
+                  {link.active ? (
+                    <LinkAtivo />
+                  ) : (
+                    <InativoIcon />
+                  )}
+                  <TouchableOpacity
+                    style={[styles.copyButton, !link.active && styles.disabledCopyButton]}
+                    disabled={!link.active}
+                  >
+                    <CopiarLink />
                   </TouchableOpacity>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#007bff" />
             </TouchableOpacity>
           ))}
         </View>
@@ -98,44 +109,50 @@ export default function PaymentLinkScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 10,
-    backgroundColor: '#fff',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0c0c0cff',
+    color: Colors.black['02'],
   },
   content: {
     padding: 16,
   },
-  mainImage: {
+  mainImageContainer: {
     width: '100%',
-    height: 150,
+    aspectRatio: 358 / 135,
     borderRadius: 12,
     marginBottom: 24,
+    overflow: 'hidden',
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#0c0c0cff',
+    color: Colors.black['02'],
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.gray['02'],
     marginBottom: 24,
   },
   createLinkButton: {
-    backgroundColor: '#0000ff',
+    backgroundColor: Colors.blue['02'],
     borderRadius: 25,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -144,7 +161,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   createLinkButtonText: {
-    color: '#fff',
+    color: Colors.white['01'],
     fontSize: 16,
     fontWeight: 'bold',
     marginRight: 8,
@@ -156,41 +173,37 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-  },
-  searchIcon: {
-    marginRight: 8,
+    justifyContent: 'center',
   },
   searchInput: {
-    flex: 1,
-    height: 50,
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
     fontSize: 16,
-    color: '#000',
+    color: Colors.black['01'],
     textAlign: 'center',
+    backgroundColor: 'transparent',
   },
   filterButton: {
     marginLeft: 16,
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 25,
   },
   linkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: Colors.white['01'],
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   linkIconContainer: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: Colors.white['03'],
     padding: 12,
     borderRadius: 25,
     marginRight: 16,
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   linkDetails: {
     flex: 1,
@@ -198,11 +211,11 @@ const styles = StyleSheet.create({
   linkName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#5B5B5B',
+    color: Colors.gray['01'],
   },
   linkPrice: {
     fontSize: 16,
-    color: '#333',
+    color: Colors.black['02'],
     marginBottom: 8,
   },
   linkActions: {
@@ -215,41 +228,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 15,
-    marginRight: 8,
-  },
-  activeBadge: {
-    backgroundColor: '#eaf7ec',
   },
   inactiveBadge: {
-    backgroundColor: '#fce8e6',
+    backgroundColor: Colors.red['02'],
   },
   statusText: {
-    marginLeft: 4,
     fontSize: 12,
-  },
-  activeText: {
-    color: '#28a745',
   },
   inactiveText: {
-    color: '#dc3545',
+    color: Colors.red['01'],
   },
   copyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e6f2ff',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 15,
+    marginLeft: 'auto',
   },
   disabledCopyButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  copyButtonText: {
-    marginLeft: 4,
-    color: '#007bff',
-    fontSize: 12,
-  },
-  disabledCopyButtonText: {
-    color: '#aaa',
+    opacity: 0.5,
   },
 });

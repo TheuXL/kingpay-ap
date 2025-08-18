@@ -1,8 +1,16 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MonthSelector from '../../components/movements/MonthSelector';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
+
+import SaldoIcon from '@/images/transações/Transaction Icon saldo movimentações.svg';
+import SaidaIcon from '@/images/transações/Transaction Icon saida movimentações.svg';
+import FiltroIcon from '@/images/transações/Transaction Icon filtro movimentações.svg';
+import EntradaIcon from '@/images/transações/Transaction Icon entrada movimentações.svg';
+import PesquisaIcon from '@/images/transações/Transaction Icon barra de pesquisa movimentações.svg';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function MovementsScreen() {
   const router = useRouter();
@@ -13,7 +21,7 @@ export default function MovementsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+          <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Movimentações</Text>
       </View>
@@ -28,7 +36,7 @@ export default function MovementsScreen() {
         <View style={styles.summaryCard}>
           <View style={styles.summaryItem}>
             <View style={styles.summaryIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <EntradaIcon />
             </View>
             <View>
               <Text style={styles.summaryLabel}>Entradas</Text>
@@ -37,7 +45,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.summaryItem}>
             <View style={styles.summaryIconContainer}>
-              <Ionicons name="arrow-up" size={24} color="#DC2626" />
+              <SaidaIcon />
             </View>
             <View>
               <Text style={styles.summaryLabel}>Saídas</Text>
@@ -46,7 +54,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.summaryItem}>
             <View style={styles.summaryIconContainer}>
-              <Ionicons name="wallet-outline" size={24} color="#64748B" />
+              <SaldoIcon />
             </View>
             <View>
               <Text style={styles.summaryLabel}>Saldo total</Text>
@@ -57,20 +65,20 @@ export default function MovementsScreen() {
         </View>
         <View style={styles.searchFilterContainer}>
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={24} color="#64748B" />
+            <PesquisaIcon />
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar transações"
             />
           </View>
           <TouchableOpacity style={styles.filterButton}>
-            <Ionicons name="filter" size={24} color="#1E293B" />
+            <FiltroIcon />
           </TouchableOpacity>
         </View>
         <View style={styles.transactionList}>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <EntradaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Entrada</Text>
@@ -83,7 +91,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-up" size={24} color="#DC2626" />
+              <SaidaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Saída</Text>
@@ -96,7 +104,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <EntradaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Entrada</Text>
@@ -109,7 +117,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <EntradaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Entrada</Text>
@@ -122,7 +130,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-up" size={24} color="#DC2626" />
+              <SaidaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Saída</Text>
@@ -135,7 +143,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-up" size={24} color="#DC2626" />
+              <SaidaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Saída</Text>
@@ -148,7 +156,7 @@ export default function MovementsScreen() {
           </View>
           <View style={styles.transactionItem}>
             <View style={styles.transactionIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <EntradaIcon />
             </View>
             <View style={styles.transactionDetails}>
               <Text style={styles.transactionType}>Entrada</Text>
@@ -168,7 +176,7 @@ export default function MovementsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -177,8 +185,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,

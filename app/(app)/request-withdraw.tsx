@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function RequestWithdrawScreen() {
   const router = useRouter();
@@ -10,9 +11,9 @@ export default function RequestWithdrawScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+          <BackIcon />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Área Pix</Text>
+        <Text style={styles.headerTitle}>Solicitar Saque</Text>
       </View>
       <Text style={styles.title}>Pra quem você deseja enviar?</Text>
       <Text style={styles.subtitle}>Selecione uma das suas contas cadastradas ou digite uma nova chave</Text>

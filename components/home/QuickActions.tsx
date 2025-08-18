@@ -9,18 +9,18 @@ export default function QuickActions() {
   const router = useRouter();
 
   const actions = [
-    { icon: <CarteiraIcon width={24} height={24} />, label: 'Carteira', screen: '/wallet' },
+    { icon: <CarteiraIcon width={70} height={70} />, label: 'Carteira', screen: '/wallet' },
     {
-      icon: <TransacoesIcon width={24} height={24} />,
+      icon: <TransacoesIcon width={70} height={70} />,
       label: 'Transações',
       screen: '/transactions',
     },
     {
-      icon: <LinkPagamentoIcon width={24} height={24} />,
-      label: 'Link de Pagamento',
+      icon: <LinkPagamentoIcon width={70} height={70} />,
+      label: 'Link de\nPagamento',
       screen: '/payment-link',
     },
-    { icon: <AreaPixIcon width={24} height={24} />, label: 'Área Pix', screen: '/(app)/pix-area' },
+    { icon: <AreaPixIcon width={70} height={70} />, label: 'Área Pix', screen: '/(app)/pix-area' },
   ];
 
   return (
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
     marginTop: 30,
   },
   actionButton: {
@@ -51,12 +51,12 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 30,
+    padding: 10,
+    borderRadius: 45,
     marginBottom: 10,
   },
   actionLabel: {
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center',
   },
 });

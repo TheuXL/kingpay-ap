@@ -1,5 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ApprovalRateChart from '../../components/management/ApprovalRateChart';
@@ -8,14 +7,18 @@ import PaymentMethodsChart from '../../components/management/PaymentMethodsChart
 import RefundsChart from '../../components/management/RefundsChart';
 import TotalSalesChart from '../../components/management/TotalSalesChart';
 import MovimentacaoIcon from '../../images/gestão/movimentação do mês.svg';
+import { Colors } from '../../constants/Colors';
+import BackIcon from '../../images/icon_back.svg';
 
 const { width } = Dimensions.get('window');
+const cardWidth = width - 40; // 20 padding on each side
 
 export default function ManagementScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
   const [activeIndex, setActiveIndex] = useState(0);
   const [showPeriodSelector, setShowPeriodSelector] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const router = useRouter();
 
   const charts = [
     { title: 'Formas de pagamento', component: <PaymentMethodsChart /> },
@@ -39,64 +42,66 @@ export default function ManagementScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Gestão</Text>
         <View style={styles.headerSpacer} />
       </View>
       <ScrollView style={styles.scrollView}>
-        <View style={styles.subHeader}>
-          <Text style={styles.subHeaderTitle}>Visão geral de vendas</Text>
-          <TouchableOpacity
-            style={styles.periodSelector}
-            onPress={handlePeriodPress}
+        <View style={styles.contentContainer}>
+          <View style={styles.subHeader}>
+            <Text style={styles.subHeaderTitle}>Visão geral de vendas</Text>
+            <TouchableOpacity
+              style={styles.periodSelector}
+              onPress={handlePeriodPress}
+            >
+              <Text>{selectedPeriod}</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            // onScroll={handleScroll}
+            scrollEventThrottle={16}
+            decelerationRate="fast"
+            snapToInterval={cardWidth + 8}
+            snapToAlignment="center"
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+            style={styles.carousel}
           >
-            <Text>{selectedPeriod}</Text>
-            <Ionicons name="chevron-down" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-        <ScrollView
-          ref={scrollViewRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          style={styles.carousel}
-        >
-          {charts.map((chart, index) => (
-            <View key={index} style={styles.chartSlide}>
-              <Card>
-                {chart.component}
-              </Card>
-            </View>
-          ))}
-        </ScrollView>
-        
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <View style={styles.actionContent}>
-              <Text style={styles.actionButtonText}>Links ativos</Text>
-              <Text style={styles.actionNumber}>12</Text>
-            </View>
-            <Ionicons name="arrow-forward" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <View style={styles.actionContent}>
-              <Text style={styles.actionButtonText}>Vendas</Text>
-              <Text style={styles.actionNumber}>789</Text>
-            </View>
-            <Ionicons name="arrow-forward" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.movements}>
-          <Text style={styles.movementsTitle}>Movimentações</Text>
-          <TouchableOpacity style={styles.movementItem}>
-            <MovimentacaoIcon width={52} height={52} />
-            <Text style={styles.movementText}>Movimentações do mês</Text>
-            <Ionicons name="arrow-forward" size={24} color="#64748B" />
-          </TouchableOpacity>
+            {charts.map((chart, index) => (
+              <View key={index} style={styles.chartSlide}>
+                <Card>
+                  {chart.component}
+                </Card>
+              </View>
+            ))}
+          </ScrollView>
+          
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.actionButton}>
+              <View style={styles.actionContent}>
+                <Text style={styles.actionButtonText}>Links ativos</Text>
+                <Text style={styles.actionNumber}>12</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <View style={styles.actionContent}>
+                <Text style={styles.actionButtonText}>Vendas</Text>
+                <Text style={styles.actionNumber}>789</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.movements}>
+            <Text style={styles.movementsTitle}>Movimentações</Text>
+            <TouchableOpacity style={styles.movementItem}>
+              <MovimentacaoIcon width={52} height={52} />
+              <Text style={styles.movementText}>Movimentações do mês</Text>
+              <View style={{ width: 52 }} />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -106,11 +111,13 @@ export default function ManagementScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.white['04'],
   },
   header: {
-    backgroundColor: '#F8FAFC',
-    paddingTop: 50,
+    backgroundColor: Colors.white['04'],
+    // borderBottomWidth: 1,
+    // borderBottomColor: Colors.gray['04'],
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
     flexDirection: 'row',
@@ -132,6 +139,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  contentContainer: {
+    // paddingHorizontal: 20,
   },
   subHeader: {
     flexDirection: 'row',
@@ -157,8 +167,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   chartSlide: {
-    width: width,
+    width: cardWidth,
     marginBottom: 30,
+    // paddingHorizontal: 20,
   },
   pagination: {
     flexDirection: 'row',
@@ -179,16 +190,19 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    // justifyContent: 'space-between',
+    gap: 8,
+    // paddingHorizontal: 20,
     marginTop: 10,
     marginBottom: 20,
+    paddingHorizontal: 20,
   },
   actionButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: Colors.blue['01'],
     borderRadius: 12,
     padding: 20,
     width: '48%',
+    flexGrow: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

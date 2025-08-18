@@ -1,9 +1,11 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import FloatingMenu from '@/components/ui/FloatingMenu';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import EditIcon from '@/images/configurações/edit.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function CompanyDataScreen() {
   const router = useRouter();
@@ -21,12 +23,13 @@ export default function CompanyDataScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView>
         <ThemedView style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <BackIcon />
           </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Configurações</ThemedText>
+          <ThemedText style={styles.headerTitle}>Dados da empresa</ThemedText>
           <View style={{ width: 24 }} />
         </ThemedView>
 
@@ -39,14 +42,13 @@ export default function CompanyDataScreen() {
               <View style={styles.inputWrapper}>
                 <TextInput style={styles.input} value={field.value} />
                 <TouchableOpacity>
-                  <Ionicons name="pencil" size={24} color="gray" />
+                  <EditIcon />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
       </ScrollView>
-      <FloatingMenu />
     </View>
   );
 }
@@ -54,7 +56,7 @@ export default function CompanyDataScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -62,10 +64,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 50,
-    paddingBottom: 20,
-    backgroundColor: '#f0f4ff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#eee',
   },
   headerTitle: {
     fontSize: 18,
@@ -74,14 +76,6 @@ const styles = StyleSheet.create({
   formSection: {
     marginHorizontal: 20,
     marginTop: 20,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
   },
   formSectionTitle: {
     fontSize: 20,
@@ -106,8 +100,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 15,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 2,
+    // elevation: 2,
   },
   input: {
     flex: 1,

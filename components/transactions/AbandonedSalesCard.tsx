@@ -1,17 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import VendasAbandonadasIcon from '../../images/transações/Icon vendas abandonadas.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function AbandonedSalesCard() {
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.infoSection}>
-          <Text style={styles.title}>40 vendas abandonadas</Text>
-          <Text style={styles.value}>R$ 800,17</Text>
+          <Text style={styles.title}>42 vendas abandonadas</Text>
+          <Text style={styles.value}>R$ 1.579,18</Text>
           <View style={styles.percentageContainer}>
-            <Feather name="arrow-down" size={14} color="red" />
-            <Text style={styles.percentage}>-7,8%</Text>
+            <Text style={styles.percentage}>+1,2%</Text>
           </View>
         </View>
         <View style={styles.iconSection}>
@@ -37,7 +37,7 @@ export default function AbandonedSalesCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.gray['04'],
     borderRadius: 12,
     padding: 20,
     width: 300,

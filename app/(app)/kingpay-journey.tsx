@@ -1,22 +1,37 @@
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Link, useRouter } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { Link, Stack, useRouter } from 'expo-router';
+import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '../../constants/Colors';
+import BackIcon from '@/images/icon_back.svg';
+// import BackgroundJornadaIcon from '@/images/jornada kingpay/Background jornada kingpay.svg'; // Removido
+import BemVindoIcon from '@/images/jornada kingpay/bem vindo(a).svg';
+import HelpIcon from '@/images/jornada kingpay/help.svg';
 
 export default function KingPayJourneyScreen() {
   const router = useRouter();
+
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Image
-        source={require('../../assets/images/bolas.png')}
+        source={require('@/images/jornada kingpay/Background jornada kingpay.svg')}
         style={styles.backgroundImage}
       />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Jornada KingPay</Text>
+        <TouchableOpacity>
+          <HelpIcon />
+        </TouchableOpacity>
+      </View>
       <View style={styles.bottomSheet}>
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="close" size={24} color="black" />
+          <Feather name="x" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.sheetTitle}>
-          Bem vindo(a) a <Text style={styles.sheetTitleHighlight}>Jornada KingPay.</Text>
-        </Text>
+        <BemVindoIcon style={{ alignSelf: 'center', marginTop: 20 }} />
         <Text style={styles.sheetSubtitle}>
           Grandes resultados merecem reconhecimento! A KingPay transforma seu
           desempenho em prêmios exclusivos.
@@ -35,7 +50,7 @@ export default function KingPayJourneyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: Colors.white['04'],
   },
   backgroundImage: {
     position: 'absolute',
@@ -43,7 +58,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: '100%',
-    height: '100%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
   },
   bottomSheet: {
     position: 'absolute',
@@ -65,18 +92,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   closeButton: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-  },
-  sheetTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  sheetTitleHighlight: {
-    color: '#4a44e4',
+    alignSelf: 'flex-start',
   },
   sheetSubtitle: {
     fontSize: 16,

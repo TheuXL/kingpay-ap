@@ -50,7 +50,7 @@ export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: b
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
     marginTop: 20,
   },
   title: {

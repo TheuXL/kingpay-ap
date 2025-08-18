@@ -1,5 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useRouter } from 'expo-router';
 import {
   Image,
   StyleSheet,
@@ -8,17 +9,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function ForgotPasswordScreen() {
+  const router = useRouter();
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <Link href="/login" asChild>
-          <TouchableOpacity>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-        </Link>
-        <Text style={styles.headerTitle}>Esqueci a senha</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
+        <ThemedText style={styles.headerTitle}>Esqueci a senha</ThemedText>
       </View>
       <Image source={require('../../assets/images/obj3d2.png')} style={styles.logo} />
       <Text style={styles.title}>Recuperação de senha</Text>
@@ -34,12 +35,10 @@ export default function ForgotPasswordScreen() {
           autoCapitalize="none"
         />
       </View>
-      <Link href="/verify-code" asChild>
-        <TouchableOpacity style={styles.sendButton}>
-          <Text style={styles.sendButtonText}>Enviar</Text>
-        </TouchableOpacity>
-      </Link>
-    </View>
+      <TouchableOpacity style={styles.sendButton}>
+        <Text style={styles.sendButtonText}>Enviar</Text>
+      </TouchableOpacity>
+    </ThemedView>
   );
 }
 

@@ -1,6 +1,6 @@
-import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import VendasAprovadasIcon from '../../images/transações/icon vendas aprovadas.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function ApprovedSalesCard() {
   return (
@@ -10,7 +10,6 @@ export default function ApprovedSalesCard() {
           <Text style={styles.title}>789 vendas aprovadas</Text>
           <Text style={styles.value}>R$ 8.236,17</Text>
           <View style={styles.percentageContainer}>
-            <Feather name="arrow-up" size={14} color="green" />
             <Text style={styles.percentage}>+2,8%</Text>
           </View>
         </View>
@@ -37,7 +36,7 @@ export default function ApprovedSalesCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.gray['04'],
     borderRadius: 12,
     padding: 20,
     width: 300,

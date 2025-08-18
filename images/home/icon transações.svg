@@ -1,8 +1,9 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="mask0_396_1400" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
-<rect width="32" height="32" fill="#D9D9D9"/>
+<svg width="77" height="76" viewBox="0 0 77 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.5" width="76" height="76" rx="38" fill="#F9FAFC"/>
+<mask id="mask0_489_1298" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="22" y="22" width="32" height="32">
+<rect x="22" y="22" width="32" height="32" fill="#D9D9D9"/>
 </mask>
-<g mask="url(#mask0_396_1400)">
-<path d="M9.33317 28L2.6665 21.3333L9.33317 14.6667L11.2332 16.5333L7.7665 20H27.9998V22.6667H7.7665L11.2332 26.1333L9.33317 28ZM22.6665 17.3333L20.7665 15.4667L24.2332 12H3.99984V9.33333H24.2332L20.7665 5.86667L22.6665 4L29.3332 10.6667L22.6665 17.3333Z" fill="#1313F2"/>
+<g mask="url(#mask0_489_1298)">
+<path d="M31.3332 50L24.6665 43.3333L31.3332 36.6667L33.2332 38.5333L29.7665 42H49.9998V44.6667H29.7665L33.2332 48.1333L31.3332 50ZM44.6665 39.3333L42.7665 37.4667L46.2332 34H25.9998V31.3333H46.2332L42.7665 27.8667L44.6665 26L51.3332 32.6667L44.6665 39.3333Z" fill="#1313F2"/>
 </g>
 </svg>

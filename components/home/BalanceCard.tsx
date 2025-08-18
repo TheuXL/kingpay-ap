@@ -1,5 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import SetaSaqueIcon from '../../images/home/seta Solicita saque.svg';
+import { Colors } from '../../constants/Colors';
 
 export default function BalanceCard({ balanceVisible }: { balanceVisible: boolean }) {
   const router = useRouter();
@@ -11,8 +13,8 @@ export default function BalanceCard({ balanceVisible }: { balanceVisible: boolea
       </View>
       <Text style={styles.balanceText}>{balanceVisible ? 'R$ 138.241,45' : '*******'}</Text>
       <TouchableOpacity style={styles.withdrawButton} onPress={() => router.push('/request-withdraw' as any)}>
-        <Text style={styles.withdrawButtonText}>Antecipar Saque</Text>
-        <Image source={require('../../images/home/icon transações.svg')} style={{ width: 24, height: 24 }} />
+        <Text style={styles.withdrawButtonText}>Solicitar Saque</Text>
+        <SetaSaqueIcon />
       </TouchableOpacity>
     </View>
   );
@@ -20,10 +22,10 @@ export default function BalanceCard({ balanceVisible }: { balanceVisible: boolea
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#2A2AFF',
+    backgroundColor: Colors.blue['01'],
     padding: 20,
     borderRadius: 20,
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
     marginTop: 10,
   },
   header: {

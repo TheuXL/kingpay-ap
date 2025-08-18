@@ -1,37 +1,35 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function VerifyCodeScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Link href="/forgot-password" asChild>
-          <TouchableOpacity>
-            <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-        </Link>
-        <Text style={styles.headerTitle}>Esqueci a senha</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
+        <ThemedText style={styles.headerTitle}>Esqueci a senha</ThemedText>
       </View>
-      <Text style={styles.title}>Digite o código enviado para seu email</Text>
-      
-      <View style={styles.codeContainer}>
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-        <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
-      </View>
-      <TouchableOpacity style={styles.verifyButton}>
-        <Text style={styles.verifyButtonText}>Confirmar</Text>
-      </TouchableOpacity>
+      <ThemedView style={styles.content}>
+        <ThemedText style={styles.title}>Digite o código enviado para seu email</ThemedText>
+        
+        <View style={styles.codeContainer}>
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+          <TextInput style={styles.codeInput} maxLength={1} keyboardType="number-pad" />
+        </View>
+        <TouchableOpacity style={styles.verifyButton}>
+          <ThemedText style={styles.verifyButtonText}>Confirmar</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
     </View>
   );
 }

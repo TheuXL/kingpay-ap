@@ -1,14 +1,14 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import BalanceCards from '@/components/wallet/BalanceCards';
-import TransactionFilter from '@/components/wallet/TransactionFilter';
-import { TransactionList } from '@/components/wallet/TransactionList';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import React, { useState } from 'react';
+import { Stack, useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import BalanceCards from '../../components/wallet/BalanceCards';
+import TransactionFilter from '../../components/wallet/TransactionFilter';
+import { TransactionList } from '../../components/wallet/TransactionList';
+import BackIcon from '@/images/icon_back.svg';
+import React, { useState } from 'react';
 
 export default function WalletScreen() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('Extrato');
 
   const transactions = [
@@ -17,14 +17,14 @@ export default function WalletScreen() {
       email: 'gabrielsantos@gmail.com',
       amount: '+ R$ 245,50',
       date: 'Hoje',
-      icon: require('../../assets/images/icon.png'),
+      type: 'pix' as const,
     },
     {
       name: 'Capa Notebook Acer Nitro 5',
       email: 'gabrielsantos@gmail.com',
       amount: '+ R$ 245,50',
       date: 'Ontem',
-      icon: require('../../assets/images/icon.png'),
+      type: 'card_approved' as const,
     },
   ];
 
@@ -48,20 +48,27 @@ export default function WalletScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Carteira" />
-      <ScrollView style={styles.scrollContainer}>
-        <BalanceCards />
-        <View style={styles.transactionsHeader}>
-        <ThemedText type="subtitle">Movimentações</ThemedText>
-        <Link href="/movements" asChild>
-          <TouchableOpacity style={styles.seeAllButton}>
-            <Text style={styles.seeAllText}>Ver tudo</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0000FF" />
-          </TouchableOpacity>
-        </Link>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Carteira</Text>
+        <View style={{ width: 24 }} />
       </View>
-      <TransactionFilter activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
-      {renderContent()}
+      <ScrollView>
+        <BalanceCards />
+        <View style={styles.contentContainer}>
+          <View style={styles.movementsHeader}>
+            <Text style={styles.movementsTitle}>Movimentações</Text>
+            <TouchableOpacity style={styles.viewAllButton}>
+              <Text style={styles.viewAllText}>Ver tudo</Text>
+              <Ionicons name="arrow-forward" size={16} color="#4A90E2" />
+            </TouchableOpacity>
+          </View>
+          <TransactionFilter activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+          {renderContent()}
+        </View>
       </ScrollView>
     </View>
   );
@@ -72,28 +79,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  scrollContainer: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 60,
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
-  pageTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginVertical: 20,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
   },
-  transactionsHeader: {
+  contentContainer: {
+    paddingHorizontal: 20,
+    marginTop: 30,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    borderColor: 'transparent',
+  },
+  movementsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
-  seeAllButton: {
+  movementsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  seeAllText: {
-    color: '#0000FF',
-    marginRight: 5,
+  viewAllText: {
+    color: '#4A90E2',
     fontWeight: 'bold',
+    marginRight: 5,
   },
   emptyStateContainer: {
     alignItems: 'center',

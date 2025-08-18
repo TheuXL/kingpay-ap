@@ -3,6 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '../../constants/Colors';
 
 const KingpayJourneyDetails = () => {
   const router = useRouter();
@@ -19,7 +21,7 @@ const KingpayJourneyDetails = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
+            <BackIcon />
           </Pressable>
           <Text style={styles.headerTitle}>Jornada KingPay</Text>
           <Ionicons name="help-circle-outline" size={24} color="white" />
@@ -69,6 +71,7 @@ const KingpayJourneyDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.white['01'],
   },
   safeArea: {
     flex: 1,

@@ -22,8 +22,8 @@ export default function AppLayout() {
           }}
         />
         <Stack.Screen name="transactions" options={{ headerShown: false }} />
-        <Stack.Screen name="create-payment-link-personalize" options={{ headerShown: false }} />
-        <Stack.Screen name="create-payment-link" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="create-payment-link-personalize" options={{ headerShown: false }} /> */}
+        {/* <Stack.Screen name="create-payment-link" options={{ headerShown: false }} /> */}
         <Stack.Screen name="kingpay-journey-details" options={{ headerShown: false }} />
         <Stack.Screen name="kingpay-journey" options={{ headerShown: false }} />
         <Stack.Screen name="payment-link-success" options={{ headerShown: false }} />

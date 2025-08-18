@@ -6,7 +6,7 @@ import IconCartaoAprovado from '../../images/transações/TransactionIconCartaoA
 import IconCartaoFalhado from '../../images/transações/TransactionIconCartaoFalhado.svg';
 import IconPix from '../../images/transações/TransactionIconPix.svg';
 
-type Transaction = {
+export type Transaction = {
   name: string;
   email: string;
   amount: string;
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#F0F0F0',
   },
   transactionIcon: {
     marginRight: 16,

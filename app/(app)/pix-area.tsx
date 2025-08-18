@@ -1,20 +1,25 @@
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CelularIcon from '../../images/Area Pix/celular.svg';
+import ChaveAleatoriaIcon from '../../images/Area Pix/chave aleatoria.svg';
+
+const keyIcons = {
+  'Chave aleatória': <ChaveAleatoriaIcon width={60} height={60}/>,
+  'Celular': <CelularIcon width={60} height={60} />,
+};
 
 export default function PixArea() {
   const router = useRouter();
 
   const registeredKeys = [
     {
-      type: 'Chave aleatória',
+      type: 'Chave aleatória' as const,
       key: 'v9KpW7m3zLUYqXrj2FbCn8sTMAZ1hdEOXlgkB5JiIPuRQcf0ts',
-      icon: <FontAwesome5 name="key" size={24} color="#333" />,
     },
     {
-      type: 'Celular',
+      type: 'Celular' as const,
       key: '(31) 99877-4567',
-      icon: <MaterialCommunityIcons name="cellphone" size={24} color="#333" />,
     },
   ];
 
@@ -52,7 +57,7 @@ export default function PixArea() {
 
         {registeredKeys.map((item, index) => (
           <View key={index} style={styles.keyItem}>
-            <View style={styles.keyIconContainer}>{item.icon}</View>
+            <View style={styles.keyIconContainer}>{keyIcons[item.type]}</View>
             <View style={styles.keyDetails}>
               <Text style={styles.keyType}>{item.type}</Text>
               <Text style={styles.keyValue}>{item.key}</Text>
@@ -133,9 +138,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   keyIconContainer: {
-    backgroundColor: '#F0F0F0',
-    padding: 15,
-    borderRadius: 30,
     marginRight: 15,
   },
   keyDetails: {

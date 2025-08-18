@@ -1,7 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import * as LucideIcons from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import CancelarLinkIcon from '@/images/link de pagamento/Icon cancelar link.svg';
+import LinksIcon from '@/images/link de pagamento/Icon links.svg';
+import CopiarLinkIcon from '@/images/link de pagamento/Copy Icon Container.svg';
+import LinkAtivoIcon from '@/images/link de pagamento/link ativo.svg';
+import SendIcon from '@/images/link de pagamento/Send Icon.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function PaymentLinkDetailsScreen() {
   const router = useRouter();
@@ -11,9 +18,9 @@ export default function PaymentLinkDetailsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+          <BackIcon />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Link de Pagamento</Text>
+        <Text style={styles.headerTitle}>Detalhes do link</Text>
       </View>
       <ScrollView style={styles.scrollView}>
        
@@ -21,22 +28,19 @@ export default function PaymentLinkDetailsScreen() {
 
  <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="link-outline" size={24} color="blue" />
+            <LinksIcon width={56} height={56} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="paper-plane-outline" size={24} color="blue" />
+            <SendIcon width={56} height={56} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
-            <LucideIcons.Link2Off color="red" size={24} />
+            <CancelarLinkIcon width={56} height={56} />
           </TouchableOpacity>
         </View>
 
           <View style={styles.productHeader}>
             <Text style={styles.productValue}>R$ 34,90</Text>
-            <View style={styles.activeBadge}>
-              <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-              <Text style={styles.activeBadgeText}>Ativo</Text>
-            </View>
+            <LinkAtivoIcon />
           </View>
           <Text style={styles.productName}>Capa Notebook Acer Nitro 5</Text>
           <Text style={styles.productDate}>Criado em 22 de julho de 2025 às 11:33h.</Text>
@@ -57,7 +61,7 @@ export default function PaymentLinkDetailsScreen() {
           <View style={styles.linkContainer}>
             <Text style={styles.linkText}>https://app.kingpaybr.com/pay/27a8d0f5-8967-42c5-8f45-c51d4b377748</Text>
             <TouchableOpacity style={styles.copyButton}>
-              <Ionicons name="copy-outline" size={24} color="white" />
+              <CopiarLinkIcon />
             </TouchableOpacity>
           </View>
         </View>
@@ -69,17 +73,17 @@ export default function PaymentLinkDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'white',
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,
@@ -97,9 +101,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   actionButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 32,
-    padding: 16,
   },
   card: {
     backgroundColor: '#F1F5F9',
@@ -183,8 +184,6 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   copyButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
     padding: 8,
     marginLeft: 8,
   },

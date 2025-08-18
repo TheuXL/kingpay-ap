@@ -6,6 +6,12 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import BoletoIcon from '@/images/link de pagamento/Formas de pagamento boleto bancário.svg';
+import CartaoIcon from '@/images/link de pagamento/Formas de pagamento cartão de credito.svg';
+import PixIcon from '@/images/link de pagamento/Formas de pagamento pix.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
+
 export default function CreatePaymentLinkScreen() {
   const router = useRouter();
   const [isChecked, setChecked] = useState(false);
@@ -14,7 +20,7 @@ export default function CreatePaymentLinkScreen() {
     <ScrollView style={styles.container}>
       <ThemedView style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <BackIcon />
         </TouchableOpacity>
         <ThemedText style={styles.headerTitle}>Criar link de pagamento</ThemedText>
         <TouchableOpacity>
@@ -31,16 +37,13 @@ export default function CreatePaymentLinkScreen() {
           <Text style={styles.sectionTitle}>Selecione as formas de pagamento</Text>
           <View style={styles.paymentMethods}>
             <TouchableOpacity style={styles.paymentMethod}>
-              <Ionicons name="card-outline" size={24} color="black" />
-              <Text style={styles.paymentMethodText}>Cartão de crédito</Text>
+              <CartaoIcon />
             </TouchableOpacity>
             <TouchableOpacity style={styles.paymentMethod}>
-              <Ionicons name="diamond-outline" size={24} color="black" />
-              <Text style={styles.paymentMethodText}>Pix</Text>
+              <PixIcon />
             </TouchableOpacity>
             <TouchableOpacity style={styles.paymentMethod}>
-              <Ionicons name="barcode-outline" size={24} color="black" />
-              <Text style={styles.paymentMethodText}>Boleto bancário</Text>
+              <BoletoIcon />
             </TouchableOpacity>
           </View>
 
@@ -67,7 +70,7 @@ export default function CreatePaymentLinkScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   mainContainer: {
     margin: 15,
@@ -129,9 +132,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     padding: 15,
     borderRadius: 12,
-  },
-  paymentMethodText: {
-    marginLeft: 10,
   },
   addressSwitch: {
     flexDirection: 'row',

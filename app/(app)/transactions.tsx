@@ -4,9 +4,12 @@ import { TransactionList } from '@/components/wallet/TransactionList';
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import TransactionMetrics from '../../components/transactions/TransactionMetrics';
 import FilterIcon from '../../images/transações/Filter Container.svg';
-import SearchBarIcon from '../../images/transações/Transações buscas.svg';
+import BaraDePesquisa from '../../images/link de pagamento/bara de pesquisa.svg';
+import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 
 export default function TransactionsScreen() {
+  const router = useRouter();
   const transactions = [
     {
       name: 'Capa Notebook Acer Nitro 5',
@@ -40,33 +43,35 @@ export default function TransactionsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Histórico" />
-      <ScrollView style={styles.scrollContainer}>
+      <ScreenHeader title="Transações" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <TransactionMetrics />
-        <View style={styles.content}>
-
-          <View style={styles.transactionsHeader}>
+        <View style={styles.contentPadding}>
+          <View style={styles.cardsRow}>
             <ThemedText style={styles.transactionsTitle}>Histórico</ThemedText>
-          <TouchableOpacity style={styles.viewAllContainer}>
-            <ThemedText style={styles.viewAll}>Ver tudo</ThemedText>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputWrapper}>
-            <SearchBarIcon width="100%" height={58} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="" //voltar para o placeholder original
-              placeholderTextColor="#A0A0A0"
-            />
+            <TouchableOpacity style={styles.viewAllContainer}>
+              <ThemedText style={styles.viewAll}>Ver tudo</ThemedText>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <FilterIcon width={58} height={58} />
-          </TouchableOpacity>
-        </View>
 
-        <TransactionList transactions={transactions} />
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputWrapper}>
+              <BaraDePesquisa width="100%" height={58} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="" //voltar para o placeholder original
+                placeholderTextColor="#A0A0A0"
+              />
+            </View>
+            <TouchableOpacity style={styles.filterButton}>
+              <FilterIcon width={58} height={58} />
+            </TouchableOpacity>
+          </View>
+
+          <TransactionList transactions={transactions} />
         </View>
       </ScrollView>
     </View>
@@ -76,7 +81,7 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.white['02'],
   },
   scrollContainer: {
     flex: 1,
@@ -125,5 +130,18 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     marginLeft: 16,
+  },
+  scrollContent: {
+    // paddingHorizontal: 20, // Removido
+  },
+  contentPadding: {
+    paddingHorizontal: 20,
+    marginTop: 30,
+  },
+  cardsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
 });

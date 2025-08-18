@@ -1,6 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import TotalGanhoIcon from '@/images/painel de afiliados/icon total de ganho.svg';
+import EmpresasIcon from '@/images/painel de afiliados/icon empresas indicadas.svg';
+import UltimoSaqueIcon from '@/images/painel de afiliados/utimo saque.svg';
+import CopyIcon from '@/images/painel de afiliados/Copy Icon Container.svg';
+import RecebidoIcon from '@/images/painel de afiliados/Icon recebido.svg';
+import BackIcon from '@/images/icon_back.svg';
 
 export default function AffiliatePanelScreen() {
   const router = useRouter();
@@ -10,7 +17,7 @@ export default function AffiliatePanelScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+          <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Painel de afiliados</Text>
       </View>
@@ -28,19 +35,19 @@ export default function AffiliatePanelScreen() {
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="cash-outline" size={24} color="#1E293B" />
+            <TotalGanhoIcon />
             <Text style={styles.statLabel}>Total ganho</Text>
             <Text style={styles.statValue}>R$ 3.133,45</Text>
             <Text style={styles.statSubLabel}>Total sacado: R$ 2.792,11</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="business-outline" size={24} color="#1E293B" />
+            <EmpresasIcon />
             <Text style={styles.statLabel}>Empresas indicadas</Text>
             <Text style={styles.statValue}>12</Text>
             <Text style={styles.statSubLabel}>Média por indicação: R$ 0,00</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="arrow-up-outline" size={24} color="#1E293B" />
+            <UltimoSaqueIcon />
             <Text style={styles.statLabel}>Último saque</Text>
             <Text style={styles.statValue}>R$ 703,09</Text>
             <Text style={styles.statSubLabel}>Realizado em: 03/08/2025</Text>
@@ -52,7 +59,7 @@ export default function AffiliatePanelScreen() {
           <View style={styles.linkContainer}>
             <Text style={styles.linkText}>https://app.kingpaybr.com?ref=REN00000</Text>
             <TouchableOpacity style={styles.copyButton}>
-              <Ionicons name="copy-outline" size={24} color="white" />
+              <CopyIcon />
             </TouchableOpacity>
           </View>
         </View>
@@ -60,7 +67,7 @@ export default function AffiliatePanelScreen() {
           <Text style={styles.historyTitle}>Histórico</Text>
           <View style={styles.historyItem}>
             <View style={styles.historyIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <RecebidoIcon />
             </View>
             <View style={styles.historyDetails}>
               <Text style={styles.historyType}>Recebido</Text>
@@ -73,7 +80,7 @@ export default function AffiliatePanelScreen() {
           </View>
           <View style={styles.historyItem}>
             <View style={styles.historyIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <RecebidoIcon />
             </View>
             <View style={styles.historyDetails}>
               <Text style={styles.historyType}>Recebido</Text>
@@ -86,7 +93,7 @@ export default function AffiliatePanelScreen() {
           </View>
           <View style={styles.historyItem}>
             <View style={styles.historyIconContainer}>
-              <Ionicons name="arrow-down" size={24} color="#10B981" />
+              <RecebidoIcon />
             </View>
             <View style={styles.historyDetails}>
               <Text style={styles.historyType}>Recebido</Text>
@@ -106,7 +113,7 @@ export default function AffiliatePanelScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -115,8 +122,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,
@@ -129,7 +136,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   balanceCard: {
-    backgroundColor: '#165aecff',
+    backgroundColor: Colors.blue['01'],
     borderRadius: 12,
     padding: 30,
     marginBottom: 40,
@@ -218,9 +225,9 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   copyButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 8,
-    padding: 8,
+    // backgroundColor: '#2563EB',
+    // borderRadius: 8,
+    // padding: 8,
   },
   historySection: {
     marginTop: 20,

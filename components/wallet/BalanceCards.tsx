@@ -1,34 +1,42 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import SaldoPixIcon from '../../images/carteira/Icon Saldo disponível (Pix).svg';
+import SaldoCartaoIcon from '../../images/carteira/icon Saldo disponível (Cartão).svg';
+import AReceberIcon from '../../images/carteira/icon A receber.svg';
+import ReservaFinanceiraIcon from '../../images/carteira/icon Reserva Financeira.svg';
+import SetaSolicitaIcon from '../../images/carteira/seta solicita....svg';
+import { Colors } from '@/constants/Colors';
+
+const balanceIcons = {
+  'Saldo disponível (Pix)': <SaldoPixIcon width={24} height={24} />,
+  'Saldo disponível (Cartão)': <SaldoCartaoIcon width={24} height={24} />,
+  'A receber': <AReceberIcon width={24} height={24} />,
+  'Reserva Financeira': <ReservaFinanceiraIcon width={24} height={24} />,
+};
 
 const balanceData = [
   {
-    type: 'Saldo disponível (Pix)',
+    type: 'Saldo disponível (Pix)' as const,
     amount: 'R$ 138.241,15',
-    icon: 'diamond',
-    color: '#0000FF',
+    color: Colors.blue['01'],
     action: 'Solicitar saque',
   },
   {
-    type: 'Saldo disponível (Cartão)',
+    type: 'Saldo disponível (Cartão)' as const,
     amount: 'R$ 138.241,15',
-    icon: 'card',
-    color: '#00008B',
+    color: Colors.blue['03'],
     action: 'Solicitar saque',
   },
   {
-    type: 'A receber',
+    type: 'A receber' as const,
     amount: 'R$ 138.241,15',
-    icon: 'cash',
-    color: '#2E8B57',
+    color: Colors.green['02'],
     action: 'Solicitar saque',
   },
   {
-    type: 'Reserva Financeira',
+    type: 'Reserva Financeira' as const,
     amount: 'R$ 138.241,15',
-    icon: 'shield-checkmark',
-    color: '#FFFFFF',
+    color: Colors.white['01'],
     textColor: '#000000',
     description: 'Valor retido para garantir a segurança de suas transações.',
   },
@@ -40,7 +48,7 @@ export default function BalanceCards() {
       {balanceData.map((card, index) => (
         <View key={index} style={[styles.card, { backgroundColor: card.color }]}>
           <View style={styles.cardHeader}>
-            <Ionicons name={card.icon as any} size={20} color={card.textColor || 'white'} />
+            {balanceIcons[card.type]}
             <Text style={[styles.cardType, { color: card.textColor || 'white' }]}>{card.type}</Text>
           </View>
           <Text style={[styles.amount, { color: card.textColor || 'white' }]}>{card.amount}</Text>
@@ -48,7 +56,7 @@ export default function BalanceCards() {
             <TouchableOpacity>
               <View style={styles.actionContainer}>
                 <Text style={[styles.actionText, { color: card.textColor || 'white' }]}>{card.action}</Text>
-                <Ionicons name="arrow-forward" size={20} color={card.textColor || 'white'} />
+                <SetaSolicitaIcon style={{ marginLeft: 10, marginRight: 130 }} />
               </View>
             </TouchableOpacity>
           ) : (
@@ -63,6 +71,7 @@ export default function BalanceCards() {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 20,
+    paddingLeft: 20,
   },
   card: {
     width: 300,
@@ -92,7 +101,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 16,
   },
   description: {
     fontSize: 12,

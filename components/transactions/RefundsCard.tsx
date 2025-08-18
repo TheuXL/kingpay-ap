@@ -1,6 +1,6 @@
-import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import EstornosIcon from '../../images/transações/Icon estornos.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function RefundsCard() {
   return (
@@ -10,7 +10,6 @@ export default function RefundsCard() {
           <Text style={styles.title}>Estornos</Text>
           <Text style={styles.value}>R$ 625,00</Text>
           <View style={styles.percentageContainer}>
-            <Feather name="arrow-down" size={14} color="red" />
             <Text style={styles.percentage}>+23,8%</Text>
           </View>
         </View>
@@ -37,7 +36,7 @@ export default function RefundsCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.gray['04'],
     borderRadius: 12,
     padding: 20,
     width: 300,

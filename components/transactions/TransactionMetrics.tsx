@@ -18,7 +18,12 @@ export default function TransactionMetrics() {
           <Ionicons name="chevron-down" size={20} color="black" />
         </TouchableOpacity>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cardsContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.cardsContainer}
+        contentContainerStyle={styles.cardsContentContainer}
+      >
         <ApprovedSalesCard />
         <AbandonedSalesCard />
         <CommissionCard />
@@ -30,13 +35,14 @@ export default function TransactionMetrics() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    paddingVertical: 10,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 20,
   },
   title: {
     fontSize: 18,
@@ -52,5 +58,8 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     flexDirection: 'row',
+  },
+  cardsContentContainer: {
+    paddingLeft: 20,
   },
 });

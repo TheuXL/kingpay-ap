@@ -2,19 +2,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import NotificationsIcon from '../../images/home/Notifications Icon.svg';
+import ContaAtualIcon from '../../images/home/icon conta atual perfil.svg';
+import MultiHillsIcon from '../../images/home/multihills.svg';
+import VernellTechIcon from '../../images/home/vernell tech.svg';
 
 export default function AccountSwitcher({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const router = useRouter();
   const currentAccount = {
     name: 'Gabriel Souza',
     type: 'Conta empresarial',
-    avatar: require('@/assets/images/logo.png'),
+    icon: <ContaAtualIcon width={50} height={50} />,
   };
 
   const otherAccounts = [
-    { name: 'Smart Tech', type: 'Conta empresarial' },
-    { name: 'Sommar Tech', type: 'Conta empresarial' },
-    { name: 'MultiHills', type: 'Conta empresarial' },
+    { name: 'Smart Tech', type: 'Conta empresarial', icon: <ContaAtualIcon width={50} height={50} /> },
+    { name: 'Vernell Tech', type: 'Conta empresarial', icon: <VernellTechIcon width={50} height={50} /> },
+    { name: 'MultiHills', type: 'Conta empresarial', icon: <MultiHillsIcon width={50} height={50} /> },
   ];
 
   return (
@@ -26,12 +29,12 @@ export default function AccountSwitcher({ visible, onClose }: { visible: boolean
               <Ionicons name="close" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.notificationButton} onPress={() => router.push('/(app)/notifications')}>
-              <NotificationsIcon width={24} height={24} />
+              <NotificationsIcon width={40} height={40} />
             </TouchableOpacity>
           </View>
           <Text style={styles.title}>Conta atual</Text>
           <TouchableOpacity style={styles.currentAccount}>
-            <Image source={currentAccount.avatar} style={styles.avatar} />
+            {currentAccount.icon}
             <View>
               <Text style={styles.accountName}>{currentAccount.name}</Text>
               <Text style={styles.accountType}>{currentAccount.type}</Text>
@@ -42,7 +45,7 @@ export default function AccountSwitcher({ visible, onClose }: { visible: boolean
           <Text style={styles.title}>Outras contas</Text>
           {otherAccounts.map((account, index) => (
             <TouchableOpacity key={index} style={styles.otherAccount}>
-              <View style={styles.otherAvatar} />
+              {account.icon}
               <View>
                 <Text style={styles.otherAccountName}>{account.name}</Text>
                 <Text style={styles.otherAccountType}>{account.type}</Text>

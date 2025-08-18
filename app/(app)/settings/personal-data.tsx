@@ -1,9 +1,12 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import FloatingMenu from '@/components/ui/FloatingMenu';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import EditIcon from '@/images/configurações/edit.svg';
+import { Ionicons } from '@expo/vector-icons';
+import ProfileImage from '@/images/configurações/Profile Image Container.svg';
+import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function PersonalDataScreen() {
   const router = useRouter();
@@ -16,22 +19,18 @@ export default function PersonalDataScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      <ScrollView>
-        <ThemedView style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
-          </TouchableOpacity>
-          <ThemedText style={styles.headerTitle}>Configurações</ThemedText>
-          <View style={{ width: 24 }} />
-        </ThemedView>
-
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>ST</Text>
-            <TouchableOpacity style={styles.addIcon}>
-              <Ionicons name="add" size={24} color="white" />
-            </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <BackIcon />
+        </TouchableOpacity>
+        <Text style={styles.title}>Meus Dados</Text>
+        <View style={{ width: 24 }} />
+      </View>
+      <View style={styles.profileCard}>
+          <View style={styles.avatarContainer}>
+            <ProfileImage />
           </View>
           <Text style={styles.profileName}>Gabriel Sobral dos Santos</Text>
           <Text style={styles.profileId}>69635d93-560a-4161-8a46-67e4eb58c</Text>
@@ -46,22 +45,20 @@ export default function PersonalDataScreen() {
               <View style={styles.inputWrapper}>
                 <TextInput style={styles.input} value={field.value} />
                 <TouchableOpacity>
-                  <Ionicons name="pencil" size={24} color="gray" />
+                  <EditIcon />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
       </ScrollView>
-      <FloatingMenu />
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: Colors.white['01'],
   },
   header: {
     flexDirection: 'row',
@@ -88,27 +85,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
+  avatarContainer: {
+    position: 'relative',
     marginBottom: 15,
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: 'blue',
-  },
-  addIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: 'blue',
-    borderRadius: 15,
-    padding: 5,
   },
   profileName: {
     fontSize: 18,
@@ -142,8 +121,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 15,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
   input: {
     flex: 1,

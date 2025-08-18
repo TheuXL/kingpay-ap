@@ -1,82 +1,64 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import ExtratoIcon from '../../images/carteira/extrato.svg';
+import AntecipacoesIcon from '../../images/carteira/antecipações.svg';
+import TransferenciasIcon from '../../images/carteira/transferencias.svg';
+import { Colors } from '../../constants/Colors';
 
-const filters = [
-  {
-    label: 'Extrato',
-    icon: 'document-text-outline',
-  },
-  {
-    label: 'Antecipações',
-    icon: 'time-outline',
-  },
-  {
-    label: 'Transferências',
-    icon: 'cash-outline',
-  },
-];
-
-interface TransactionFilterProps {
+type TransactionFilterProps = {
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
-}
+};
+
+const filters = [
+  { name: 'Extrato', icon: <ExtratoIcon width={20} height={20} /> },
+  { name: 'Antecipações', icon: <AntecipacoesIcon width={20} height={20} /> },
+  { name: 'Transferências', icon: <TransferenciasIcon width={20} height={20} /> },
+];
 
 export default function TransactionFilter({ activeFilter, setActiveFilter }: TransactionFilterProps) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
-      {filters.map((filter, index) => (
-        <TouchableOpacity
-          key={index}
-          style={[
-            styles.filterButton,
-            activeFilter === filter.label && styles.activeFilter,
-          ]}
-          onPress={() => setActiveFilter(filter.label)}
-        >
-          <Ionicons
-            name={filter.icon as any}
-            size={18}
-            color={activeFilter === filter.label ? '#000000' : '#8E8E93'}
-          />
-          <Text
-            style={[
-              styles.filterText,
-              activeFilter === filter.label && styles.activeFilterText,
-            ]}
+    <View style={styles.container}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {filters.map((filter) => (
+          <TouchableOpacity
+            key={filter.name}
+            style={[styles.filterButton, activeFilter === filter.name && styles.activeFilterButton]}
+            onPress={() => setActiveFilter(filter.name)}
           >
-            {filter.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+            {React.cloneElement(filter.icon, { color: Colors.black['02'] })}
+            <Text style={[styles.filterText, activeFilter === filter.name && styles.activeFilterText]}>
+              {filter.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
+    marginBottom: 20,
   },
   filterButton: {
+    padding: 12,
+    borderRadius: 20,
+    marginRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    backgroundColor: '#F5F5F5',
-    marginRight: 10,
+    backgroundColor: Colors.white['01'],
   },
-  activeFilter: {
-    backgroundColor: '#E0E0E0',
+  activeFilterButton: {
+    backgroundColor: Colors.gray['03'],
   },
   filterText: {
-    marginLeft: 8,
-    color: '#8E8E93',
-    fontWeight: '500',
     fontSize: 14,
+    color: Colors.black['02'],
+    marginLeft: 8,
   },
   activeFilterText: {
-    color: '#000000',
+    color: Colors.black['02'],
     fontWeight: 'bold',
   },
 });

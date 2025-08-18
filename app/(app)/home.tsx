@@ -7,8 +7,7 @@ import KingPayJourneyCard from '../../components/home/KingPayJourneyCard';
 import QuickActions from '../../components/home/QuickActions';
 import SalesMetricsCard from '../../components/home/SalesMetricsCard';
 import SalesSummaryCard from '../../components/home/SalesSummaryCard';
-import FloatingMenu from '../../components/ui/FloatingMenu';
-import CalendarioIcon from '../../images/home/icon calendario.svg';
+import { Colors } from '../../constants/Colors';
 
 export default function HomeScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
@@ -17,21 +16,21 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <ScrollView>
         <HomeHeader balanceVisible={balanceVisible} setBalanceVisible={setBalanceVisible} />
-        <BalanceCard balanceVisible={balanceVisible} />
-        <QuickActions />
-        <KingPayJourneyCard balanceVisible={balanceVisible} />
-      <View style={styles.salesSummaryHeader}>
-        <Text style={styles.salesSummaryTitle}>Resumo de vendas</Text>
-        <View style={styles.dateSelector}>
-          <Text>30 dias</Text>
-          <CalendarioIcon width={24} height={24} style={{ marginLeft: 8 }} />
+        <View style={styles.contentContainer}>
+          <BalanceCard balanceVisible={balanceVisible} />
+          <QuickActions />
+          <KingPayJourneyCard balanceVisible={balanceVisible} />
+          <View style={styles.salesSummaryHeader}>
+            <Text style={styles.salesSummaryTitle}>Resumo de vendas</Text>
+            <View style={styles.dateSelector}>
+              <Text>30 dias</Text>
+            </View>
+          </View>
+          <SalesSummaryCard balanceVisible={balanceVisible} />
+          <SalesMetricsCard balanceVisible={balanceVisible} />
+          <ExploreCard />
         </View>
-      </View>
-      <SalesSummaryCard balanceVisible={balanceVisible} />
-      <SalesMetricsCard balanceVisible={balanceVisible} />
-      <ExploreCard />
       </ScrollView>
-      <FloatingMenu />
     </View>
   );
 }
@@ -39,13 +38,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: Colors.white['01'],
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    marginTop: 30,
   },
   salesSummaryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
     marginTop: 40,
     marginBottom: 20,
   },
@@ -56,8 +59,9 @@ const styles = StyleSheet.create({
   dateSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: Colors.gray['03'],
   },
 });

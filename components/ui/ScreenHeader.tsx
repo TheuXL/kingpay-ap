@@ -1,8 +1,10 @@
 import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import BackIcon from '@/images/icon_back.svg';
 
 type ScreenHeaderProps = {
   title: string;
@@ -10,12 +12,12 @@ type ScreenHeaderProps = {
 };
 
 export function ScreenHeader({ title, showAccountSwitcher = false }: ScreenHeaderProps) {
-  const navigation = useNavigation();
+  const router = useRouter();
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+      <TouchableOpacity onPress={() => router.back()}>
+        <BackIcon />
       </TouchableOpacity>
       <ThemedText style={styles.title}>{title}</ThemedText>
       {showAccountSwitcher ? (
@@ -37,9 +39,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    paddingTop: 50,
     backgroundColor: '#F8F9FA',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9ECEF',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E9ECEF',
   },
   backButton: {
     padding: 8,

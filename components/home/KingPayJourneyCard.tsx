@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import BaraJornadaIcon from '../../images/home/bara jornada kingpay.svg';
 import JourneyIcon from '../../images/home/icon jornada kingpay.svg';
 
 export default function KingPayJourneyCard({ balanceVisible }: { balanceVisible: boolean }) {
@@ -12,11 +14,19 @@ export default function KingPayJourneyCard({ balanceVisible }: { balanceVisible:
         <View style={styles.header}>
           <Text style={styles.title}>Jornada KingPay</Text>
         </View>
-        <Text style={styles.progressText}>{balanceVisible ? 'R$ 8.974,00 / 10.000,00' : '*******'}</Text>
-        <View style={styles.progressBarBackground}>
-          <View style={styles.progressBarForeground} />
-        </View>
+        <Text style={styles.progressText}>
+          {balanceVisible ? (
+            <>
+              <Text style={styles.progressValue}>R$ 8.974,00</Text>
+              <Text style={styles.progressTotal}> / 10.000,00</Text>
+            </>
+          ) : (
+            '*******'
+          )}
+        </Text>
+        <BaraJornadaIcon width={'100%'} style={{ marginTop: 10 }} />
       </View>
+      <Ionicons name="chevron-forward" size={24} color="#4A90E2" style={styles.chevron} />
     </TouchableOpacity>
   );
 }
@@ -24,15 +34,14 @@ export default function KingPayJourneyCard({ balanceVisible }: { balanceVisible:
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    padding: 10,
+    backgroundColor: '#F8F9FA', // Cor de fundo do card
+    padding: 15,
     borderRadius: 20,
-    marginHorizontal: 20,
-    marginTop: 50,
+    marginTop: 30,
     alignItems: 'center',
   },
   iconContainer: {
-    marginRight: 15,
+    marginRight: 12,
   },
   detailsContainer: {
     flex: 1,
@@ -51,16 +60,14 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 5,
   },
-  progressBarBackground: {
-    backgroundColor: '#E6E9FF',
-    height: 10,
-    borderRadius: 5,
-    marginTop: 10,
+  progressValue: {
+    fontWeight: 'bold',
+    color: '#000',
   },
-  progressBarForeground: {
-    backgroundColor: '#2A2AFF',
-    height: 10,
-    borderRadius: 5,
-    width: '89.74%',
+  progressTotal: {
+    color: '#666',
+  },
+  chevron: {
+    marginLeft: 10,
   },
 });

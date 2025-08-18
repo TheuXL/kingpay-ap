@@ -1,6 +1,6 @@
-import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import ComissaoIcon from '../../images/transações/Icon comissão.svg';
+import { Colors } from '@/constants/Colors';
 
 export default function CommissionCard() {
   return (
@@ -10,7 +10,6 @@ export default function CommissionCard() {
           <Text style={styles.title}>Comissão</Text>
           <Text style={styles.value}>R$ 500,14</Text>
           <View style={styles.percentageContainer}>
-            <Feather name="arrow-up" size={14} color="green" />
             <Text style={styles.percentage}>+0,8%</Text>
           </View>
         </View>
@@ -37,7 +36,7 @@ export default function CommissionCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.gray['04'],
     borderRadius: 12,
     padding: 20,
     width: 300,

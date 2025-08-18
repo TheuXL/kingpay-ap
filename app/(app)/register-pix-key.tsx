@@ -1,16 +1,29 @@
-import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CelularIcon from '../../images/Area Pix/celular.svg';
+import ChaveAleatoriaIcon from '../../images/Area Pix/chave aleatoria.svg';
+import CnpjIcon from '../../images/Area Pix/cnpj.svg';
+import CpfIcon from '../../images/Area Pix/cpf.svg';
+import EmailIcon from '../../images/Area Pix/email.svg';
+
+const keyIcons = {
+  'Chave aleatória': <ChaveAleatoriaIcon width={40} height={40} />,
+  'CNPJ': <CnpjIcon width={40} height={40} />,
+  'Celular': <CelularIcon width={40} height={40} />,
+  'Email': <EmailIcon width={40} height={40} />,
+  'CPF': <CpfIcon width={40} height={40} />,
+};
 
 export default function RegisterPixKey() {
   const router = useRouter();
 
   const keyTypes = [
-    { name: 'Chave aleatória', icon: <FontAwesome5 name="key" size={24} color="#333" />, screen: '' },
-    { name: 'CNPJ', icon: <MaterialCommunityIcons name="office-building" size={24} color="#333" />, screen: '' },
-    { name: 'Celular', icon: <MaterialCommunityIcons name="cellphone" size={24} color="#333" />, screen: '/(app)/register-phone' },
-    { name: 'Email', icon: <MaterialCommunityIcons name="email" size={24} color="#333" />, screen: '' },
-    { name: 'CPF', icon: <MaterialCommunityIcons name="account-box" size={24} color="#333" />, screen: '' },
+    { name: 'Chave aleatória' as const, screen: '' },
+    { name: 'CNPJ' as const, screen: '' },
+    { name: 'Celular' as const, screen: '/(app)/register-phone' },
+    { name: 'Email' as const, screen: '' },
+    { name: 'CPF' as const, screen: '' },
   ];
 
   return (
@@ -37,7 +50,7 @@ export default function RegisterPixKey() {
             style={styles.keyTypeButton}
             onPress={() => keyType.screen && router.push(keyType.screen as any)}
           >
-            <View style={styles.keyTypeIconContainer}>{keyType.icon}</View>
+            <View style={styles.keyTypeIconContainer}>{keyIcons[keyType.name]}</View>
             <Text style={styles.keyTypeName}>{keyType.name}</Text>
             <FontAwesome5 name="plus" size={16} color="#2F05E0" />
           </TouchableOpacity>
@@ -76,9 +89,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   keyTypeIconContainer: {
-    backgroundColor: '#F0F0F0',
-    padding: 15,
-    borderRadius: 30,
     marginRight: 15,
   },
   keyTypeName: {

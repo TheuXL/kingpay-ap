@@ -1,24 +1,29 @@
-import { StyleSheet, Text, View } from 'react-native';
-import ExploreFeaturesIcon from '../../images/home/Explore Features Details Container.svg';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 export default function ExploreCard() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Explorar outras funcionalidades</Text>
-      <ExploreFeaturesIcon width={'100%'} />
+      <Image source={require('../../images/home/Explore Features Details Container.png')} style={styles.image} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 70,
+    // marginHorizontal: 20,
+    marginTop: 0,
+    marginBottom: -80,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: -70,
+  },
+  image: {
+    width: '100%',
+    height: undefined,
+    aspectRatio: 1, // ou a proporção correta da imagem
+    resizeMode: 'contain',
   },
 });
