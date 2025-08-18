@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 'auto',
     transform: [{ translateX: -12 }],
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   logo: {
     width: 430,
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'left',
     marginBottom: 10,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
     textAlign: 'left',
     marginBottom: 30,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   form: {
     width: '100%',
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginBottom: 8,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   input: {
     backgroundColor: '#f0f4ff',
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     fontSize: 16,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   sendButton: {
     backgroundColor: '#2A2AFF',
@@ -117,6 +117,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
 });

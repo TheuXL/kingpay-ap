@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 'auto',
     transform: [{ translateX: -12 }],
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   logo: {
     width: 400,
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000000ff',
     marginBottom: 8,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   input: {
     backgroundColor: '#f0f4ff',
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     fontSize: 16,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     fontSize: 16,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   eyeIcon: {
     width: 24,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   rememberText: {
     fontSize: 16,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   loginButton: {
     backgroundColor: '#2A2AFF',
@@ -148,6 +148,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
 });

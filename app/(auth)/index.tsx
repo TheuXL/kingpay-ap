@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: '300',
     color: '#6c95adff',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
     lineHeight: 50,
     zIndex: 1,
   },
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   forgotButton: {
     backgroundColor: '#FFFFFF',
@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
   forgotButtonText: {
     color: '#2A2AFF',
     fontSize: 18,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
 });

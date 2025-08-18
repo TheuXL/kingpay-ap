@@ -4,63 +4,44 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
+import HelpIcon from '@/images/jornada kingpay/help.svg';
+import AspiranteRealezaIcon from '@/images/jornada kingpay/Aspirante a realeza.svg';
+import Niveis2Icon from '@/images/jornada kingpay/Níveis 2.svg';
+import PrincipeComercioIcon from '@/images/jornada kingpay/principe do comércio.svg';
+import ReiDaKingIcon from '@/images/jornada kingpay/rei da king.svg';
 import { Colors } from '../../constants/Colors';
 
 const KingpayJourneyDetails = () => {
   const router = useRouter();
 
-  const journeyLevels = [
-    { name: 'Aspirante à Realeza', locked: false, completed: true },
-    { name: 'Nível 2', locked: false, completed: false, progress: 70 },
-    { name: 'Príncipe do Comércio', locked: true },
-    { name: 'Rei da KingPay', locked: true },
-  ];
-
   return (
     <LinearGradient colors={['#f0f2f5', '#f0f2f5']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
-            <BackIcon />
-          </Pressable>
-          <Text style={styles.headerTitle}>Jornada KingPay</Text>
-          <Ionicons name="help-circle-outline" size={24} color="white" />
-        </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Image source={require('../../assets/images/Container.png')} style={styles.starImage} />
+            <View style={styles.header}>
+              <Pressable onPress={() => router.back()}>
+                <BackIcon />
+              </Pressable>
+              <Text style={styles.headerTitle}>Jornada KingPay</Text>
+              <HelpIcon />
+            </View>
+            <Image source={require('@/images/jornada kingpay/Reward.png')} style={styles.starImage} />
             <Text style={styles.journeyTitle}>Sua jornada</Text>
-            {journeyLevels.map((level, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.levelContainer,
-                  level.locked ? styles.lockedLevel : styles.unlockedLevel,
-                  !level.locked && !level.completed ? styles.activeLevel : null,
-                ]}
-              >
-                <View style={styles.levelIconContainer}>
-                  {level.locked ? (
-                    <Ionicons name="lock-closed" size={24} color="#98A2B3" />
-                  ) : level.completed ? (
-                    <View style={styles.checkContainer}>
-                      <Ionicons name="checkmark" size={18} color="white" />
-                    </View>
-                  ) : (
-                    <Ionicons name="trophy" size={24} color="white" />
-                  )}
-                </View>
-                <View style={styles.levelInfo}>
-                  <Text style={styles.levelName}>{level.name}</Text>
-                  {level.progress !== undefined && (
-                    <View style={styles.progressBarBackground}>
-                      <View style={[styles.progressBar, { width: `${level.progress}%` }]} />
-                    </View>
-                  )}
-                </View>
-                <Ionicons name="chevron-forward" size={24} color={level.locked ? '#98A2B3' : 'white'} />
+            <View style={styles.levelsContainer}>
+              <View style={styles.levelImageContainer}>
+                <AspiranteRealezaIcon width={360} height={100} />
               </View>
-            ))}
+              <View style={styles.levelImageContainer}>
+                <Niveis2Icon width={360} height={100} />
+              </View>
+              <View style={styles.levelImageContainer}>
+                <PrincipeComercioIcon width={360} height={100} />
+              </View>
+              <View style={styles.levelImageContainer}>
+                <ReiDaKingIcon width={360} height={100} />
+              </View>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -81,81 +62,42 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   headerTitle: {
-    color: 'white',
+    color: Colors.blue['04'],
     fontSize: 18,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
   },
   content: {
     alignItems: 'center',
     paddingHorizontal: 20,
   },
   starImage: {
-    width: 200,
-    height: 200,
+    width: 300,
+    height: 300,
     marginVertical: 20,
   },
   journeyTitle: {
-    color: 'white',
+    color: Colors.blue['04'],
     fontSize: 16,
     fontWeight: 'bold',
     alignSelf: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 5,
+    marginTop: -40,
   },
-  levelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+  levelsContainer: {
     width: '100%',
+    alignItems: 'flex-start',
+    paddingHorizontal: 15,
   },
-  lockedLevel: {
-    backgroundColor: '#101828',
-    borderWidth: 1,
-    borderColor: '#344054',
-  },
-  unlockedLevel: {
-    backgroundColor: '#101828',
-    borderWidth: 1,
-    borderColor: '#344054',
-  },
-  activeLevel: {
-    backgroundColor: '#4B4DED',
-    borderColor: '#4B4DED',
-  },
-  levelIconContainer: {
-    marginRight: 15,
-  },
-  levelInfo: {
-    flex: 1,
-  },
-  levelName: {
-    color: 'white',
-    fontSize: 16,
-  },
-  progressBarBackground: {
-    backgroundColor: '#344054',
-    height: 8,
-    borderRadius: 4,
-    marginTop: 5,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    backgroundColor: 'white',
-    height: '100%',
-    borderRadius: 4,
-  },
-  checkContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#32D583',
-    justifyContent: 'center',
-    alignItems: 'center',
+  levelImageContainer: {
+    marginVertical: -5,
+    width: '100%',
+    alignItems: 'flex-start',
   },
 });
 

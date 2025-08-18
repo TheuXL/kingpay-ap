@@ -1,10 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { Link, Stack, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ImageBackground } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import BackIcon from '@/images/icon_back.svg';
-// import BackgroundJornadaIcon from '@/images/jornada kingpay/Background jornada kingpay.svg'; // Removido
 import BemVindoIcon from '@/images/jornada kingpay/bem vindo(a).svg';
 import HelpIcon from '@/images/jornada kingpay/help.svg';
 
@@ -14,35 +13,37 @@ export default function KingPayJourneyScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Image
-        source={require('@/images/jornada kingpay/Background jornada kingpay.svg')}
+      <ImageBackground 
+        source={require('@/images/jornada kingpay/Background.jpg')}
         style={styles.backgroundImage}
-      />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <BackIcon />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Jornada KingPay</Text>
-        <TouchableOpacity>
-          <HelpIcon />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.bottomSheet}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-          <Feather name="x" size={24} color="black" />
-        </TouchableOpacity>
-        <BemVindoIcon style={{ alignSelf: 'center', marginTop: 20 }} />
-        <Text style={styles.sheetSubtitle}>
-          Grandes resultados merecem reconhecimento! A KingPay transforma seu
-          desempenho em prêmios exclusivos.
-        </Text>
-        <Link href={'kingpay-journey-details' as any} asChild>
-          <TouchableOpacity style={styles.continueButton}>
-            <Text style={styles.continueButtonText}>Continuar</Text>
-            <Feather name="arrow-right" size={20} color="white" />
+        resizeMode="cover"
+      >
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <BackIcon />
           </TouchableOpacity>
-        </Link>
-      </View>
+          <Text style={styles.headerTitle}>Jornada KingPay</Text>
+          <TouchableOpacity>
+            <HelpIcon />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.bottomSheet}>
+          <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+            <Feather name="x" size={24} color="black" />
+          </TouchableOpacity>
+          <BemVindoIcon style={{ alignSelf: 'center', marginTop: 20 }} />
+          <Text style={styles.sheetSubtitle}>
+            Grandes resultados merecem reconhecimento! A KingPay transforma seu
+            desempenho em prêmios exclusivos.
+          </Text>
+          <Link href={'kingpay-journey-details' as any} asChild>
+            <TouchableOpacity style={styles.continueButton}>
+              <Text style={styles.continueButtonText}>Continuar</Text>
+              <Feather name="arrow-right" size={20} color="white" />
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -53,11 +54,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white['04'],
   },
   backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    flex: 1,
     width: '100%',
+    height: '100%',
   },
   header: {
     flexDirection: 'row',
@@ -71,6 +70,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+    textAlign: 'center',
+    flex: 1,
   },
   bottomSheet: {
     position: 'absolute',

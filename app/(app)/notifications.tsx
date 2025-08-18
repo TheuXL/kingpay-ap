@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import BackIcon from '@/images/icon_back.svg';
+import NotificacoesIcon from '@/images/home/notificações.svg';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function NotificationsScreen() {
         {notifications.map((notification, index) => (
           <View key={index} style={styles.notificationItem}>
             <View style={styles.notificationIconContainer}>
-              <Ionicons name="share-social-outline" size={24} color="#1E293B" />
+              <NotificacoesIcon width={48} height={48} />
             </View>
             <View style={styles.notificationContent}>
               <View style={styles.notificationHeader}>
@@ -104,12 +105,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   notificationIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginRight: 16,
   },
   notificationContent: {

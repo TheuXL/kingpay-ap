@@ -58,14 +58,14 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 'auto',
     transform: [{ translateX: -12 }],
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   title: {
     textAlign: 'left',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
     color: '#2A2AFF',
   },
  
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 24,
     backgroundColor: '#f0f4ff',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
   verifyButton: {
     backgroundColor: '#2A2AFF',
@@ -100,6 +100,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'SpaceMono',
+    fontFamily: 'Inter',
   },
 });

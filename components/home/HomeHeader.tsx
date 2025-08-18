@@ -4,6 +4,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AccountSwitcher from './AccountSwitcher';
 import HandshakeIcon from '../../images/home/icon handshake.svg';
 import VisibilityIcon from '../../images/home/icon visibility.svg';
+import NotificacoesIcon from '../../images/home/icon notificações.svg';
+import OlaUsuarioIcon from '../../images/home/icon, ola, usuario.svg';
 import { Colors } from '@/constants/Colors';
 
 export default function HomeHeader({
@@ -20,6 +22,10 @@ export default function HomeHeader({
     <View style={styles.container}>
       <TouchableOpacity style={styles.userButton} onPress={() => setModalVisible(true)}>
         <Text style={styles.userName}>Olá, Gabriel!</Text>
+        <OlaUsuarioIcon width={16} height={16} />
+        <View style={styles.notificationDot}>
+          <NotificacoesIcon width={8} height={8} />
+        </View>
       </TouchableOpacity>
       <View style={styles.iconsContainer}>
         <TouchableOpacity style={styles.iconButton} onPress={() => setBalanceVisible(!balanceVisible)}>
@@ -52,11 +58,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.gray['03'],
+    position: 'relative',
   },
   userName: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 5,
+    marginRight: 8,
   },
   iconsContainer: {
     flexDirection: 'row',
@@ -68,5 +75,16 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     borderWidth: 1,
     borderColor: Colors.gray['03'],
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: Colors.blue['01'],
+    borderRadius: 6,
+    width: 12,
+    height: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
