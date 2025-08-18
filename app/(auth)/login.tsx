@@ -8,18 +8,98 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Checkbox from '../../components/Checkbox';
 import BackIcon from '@/images/icon_back.svg';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    console.log('👆 === USUÁRIO CLICOU NO BOTÃO LOGIN ===');
+    console.log('📧 Email digitado:', email);
+    console.log('🔒 Senha digitada:', password ? '***' : 'vazia');
+    console.log('💾 Lembrar acesso:', rememberMe);
+    
+    // Validação básica
+    if (!email.trim()) {
+      console.log('❌ Validação falhou: Email vazio');
+      Alert.alert('Erro', 'Por favor, insira seu email');
+      return;
+    }
+
+    if (!password.trim()) {
+      console.log('❌ Validação falhou: Senha vazia');
+      Alert.alert('Erro', 'Por favor, insira sua senha');
+      return;
+    }
+
+    console.log('✅ Validação passou, iniciando login...');
+    setIsLoading(true);
+
+    try {
+      const success = await login(email.trim(), password);
+      
+      if (success) {
+        console.log('🎉 === LOGIN REALIZADO COM SUCESSO ===');
+        console.log('🔄 Redirecionando usuário para /home...');
+        
+        // Navegar para a tela principal
+        router.push('/home' as any);
+      } else {
+        console.log('❌ === LOGIN FALHOU ===');
+        console.log('🔄 Usuário permanecerá na tela de login');
+        
+        // Erro no login
+        Alert.alert(
+          'Erro no Login',
+          'Credenciais inválidas. Tente novamente.'
+        );
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO ===');
+      console.log('🔄 Usuário permanecerá na tela de login');
+      
+      Alert.alert(
+        'Erro de Conexão',
+        'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackPress = () => {
+    console.log('👆 === USUÁRIO CLICOU NO BOTÃO VOLTAR ===');
+    console.log('🔄 Redirecionando para tela anterior...');
+    router.back();
+  };
+
+  const handleShowPasswordToggle = () => {
+    console.log('👆 === USUÁRIO ALTEROU VISIBILIDADE DA SENHA ===');
+    console.log('👁️ Nova visibilidade:', !showPassword ? 'visível' : 'oculta');
+    setShowPassword(!showPassword);
+  };
+
+  const handleRememberMeToggle = (value: boolean) => {
+    console.log('👆 === USUÁRIO ALTEROU "LEMBRAR ACESSO" ===');
+    console.log('💾 Novo valor:', value);
+    setRememberMe(value);
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={handleBackPress}>
           <BackIcon />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Login</Text>
@@ -32,28 +112,50 @@ export default function LoginScreen() {
           placeholder="joaodasilva@gmail.com"
           keyboardType="email-address"
           autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+          editable={!isLoading}
         />
         <Text style={styles.label}>Senha</Text>
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.inputPassword}
             placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-            secureTextEntry
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            editable={!isLoading}
           />
-          <TouchableOpacity>
-            <Feather name="eye-off" size={24} color="black" />
+          <TouchableOpacity 
+            onPress={handleShowPasswordToggle}
+            disabled={isLoading}
+          >
+            <Feather 
+              name={showPassword ? "eye" : "eye-off"} 
+              size={24} 
+              color="black" 
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.rememberContainer}>
           <Text style={styles.rememberText}>Lembrar acesso</Text>
           <Checkbox
             value={rememberMe}
-            onValueChange={setRememberMe}
+            onValueChange={handleRememberMeToggle}
+            disabled={isLoading}
           />
         </View>
       </View>
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/home' as any)}>
-        <Text style={styles.loginButtonText}>Fazer login</Text>
+      <TouchableOpacity 
+        style={[styles.loginButton, isLoading && styles.loginButtonDisabled]} 
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.loginButtonText}>Fazer login</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -149,5 +251,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     fontFamily: 'Inter',
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
   },
 });

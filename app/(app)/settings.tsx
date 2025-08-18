@@ -2,8 +2,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
 
 import ProfileImage from '@/images/configurações/Profile Image Container.svg';
 import EditIcon from '@/images/configurações/edit.svg';
@@ -15,6 +16,28 @@ import BackIcon from '@/images/icon_back.svg';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair da Conta',
+      'Tem certeza que deseja sair da sua conta?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          },
+        },
+      ]
+    );
+  };
 
   const infoItems = [
     {
@@ -35,7 +58,7 @@ export default function SettingsScreen() {
     {
       icon: <SairContaIcon />,
       label: 'Sair da conta',
-      screen: '',
+      onPress: handleLogout,
       textColor: Colors.red['01'],
     },
   ];
@@ -56,8 +79,10 @@ export default function SettingsScreen() {
           <View style={styles.avatarContainer}>
             <ProfileImage />
           </View>
-          <Text style={styles.profileName}>Soutech Tecnologia de Pagamentos</Text>
-          <Text style={styles.profileId}>ID: 69635d93-560a-4161-8a46-67e4eb58c</Text>
+          <Text style={styles.profileName}>
+            {user?.user_metadata?.full_name || user?.email || 'Usuário'}
+          </Text>
+          <Text style={styles.profileId}>ID: {user?.id || 'N/A'}</Text>
         </View>
 
         <View style={styles.infoSection}>
@@ -66,7 +91,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               key={index}
               style={styles.infoItem}
-              onPress={() => item.screen && router.push(item.screen as any)}
+              onPress={item.onPress || (() => item.screen && router.push(item.screen as any))}
             >
               <View style={styles.infoItemContent}>
                 {item.icon}
