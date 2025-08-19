@@ -1,11 +1,16 @@
 import { ThemedText } from '@/components/ThemedText';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator, Image } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
 import { Colors } from '@/constants/Colors';
 import { useCreatePaymentLink } from '../../hooks/useCreatePaymentLink';
 import { CreatePaymentLinkData } from '../../services/api';
 import { useState } from 'react';
+import RetornarIcon from '@/images/link de pagamento/retornar.svg';
+import CriarLinkIcon from '@/images/link de pagamento/criar link.svg';
+import CheckIcon from '@/images/link de pagamento/check.svg';
+import HeaderIcon from '@/images/link de pagamento/Header.svg';
+import UploadLogoIcon from '@/images/link de pagamento/upload logo.svg';
 
 export default function CreatePaymentLinkPersonalizeScreen() {
   const router = useRouter();
@@ -14,27 +19,50 @@ export default function CreatePaymentLinkPersonalizeScreen() {
   
   const [selectedColor, setSelectedColor] = useState('#FF5733');
   const [logoUrl, setLogoUrl] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Receber dados do formulário anterior
   const linkData: CreatePaymentLinkData = params.linkData ? JSON.parse(params.linkData as string) : null;
 
   const colors = [
-    '#ff4d4d',
-    '#ff7a4d',
-    '#ffc54d',
-    '#4dff7a',
-    '#4dffff',
-    '#4d7aff',
-    '#7a4dff',
-    '#ff4dff',
-    '#ff4d7a',
-    '#7aff4d',
-    '#4dffc5',
-    '#4dc5ff',
-    '#7a4dff',
-    '#c54dff',
-    '#ff4dc5',
+    Colors.red['01'],
+    Colors.orange['01'],
+    Colors.yellow['01'],
+    '#4ADE80',
+    '#2DD4BF',
+    '#6366F1',
+    '#EC4899',
+    '#D946EF',
+    '#8B5CF6',
+    '#0EA5E9',
+    Colors.green['02'],
+    '#84CC16',
+    Colors.blue['01'],
+    '#F59E0B',
+    '#EF4444',
+    '#10B981',
+    '#3B82F6',
+    '#8B5A2B',
   ];
+
+  const handleSelectImage = () => {
+    // Simular seleção de imagem - em uma implementação real, usaríamos expo-image-picker
+    Alert.alert(
+      'Selecionar Imagem',
+      'Funcionalidade de seleção de imagem será implementada com expo-image-picker',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Simular', 
+          onPress: () => {
+            // Simular uma imagem selecionada
+            setSelectedImage('https://via.placeholder.com/150');
+            setLogoUrl('https://via.placeholder.com/150');
+          }
+        }
+      ]
+    );
+  };
 
   const handleCreateLink = async () => {
     if (!linkData) {
@@ -90,20 +118,34 @@ export default function CreatePaymentLinkPersonalizeScreen() {
       </View>
       <View style={styles.mainContainer}>
         <View style={styles.content}>
-          <Text style={styles.title}>Estamos quase lá! Vamos personalizar seu link de pagamento.</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Estamos quase lá! Vamos </Text>
+            <Text style={styles.titleBlue}>personalizar</Text>
+            <Text style={styles.titleBlue}>seu link de pagamento.</Text>
+          </View>
           <View style={styles.uploadContainer}>
-            {/* Removed Ionicons for cloud-upload-outline as per edit hint */}
-            <Text style={styles.uploadText}>Envie seu logotipo aqui</Text>
-            <TouchableOpacity>
-              <Text style={styles.uploadButton}>Pesquisar</Text>
-            </TouchableOpacity>
+            {selectedImage ? (
+              <View style={styles.imagePreviewContainer}>
+                <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
+                <TouchableOpacity style={styles.changeImageButton} onPress={handleSelectImage}>
+                  <Text style={styles.changeImageText}>Alterar imagem</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <UploadLogoIcon width={20} height={40} />
+                <Text style={styles.uploadText}>Envie seu logotipo aqui</Text>
+                <TouchableOpacity onPress={handleSelectImage}>
+                  <Text style={styles.uploadButton}>Pesquisar</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
           <Text style={styles.sectionTitle}>Escolha a cor do seu link</Text>
-          <TouchableOpacity style={styles.colorSelector}>
-            <Text>Selecione a cor</Text>
-            {/* Removed Ionicons for color-palette-outline as per edit hint */}
-          </TouchableOpacity>
+          <View style={styles.headerIconContainer}>
+            <HeaderIcon width="100%" height={60} />
+          </View>
 
           <View style={styles.colorGrid}>
             {colors.map((color, index) => (
@@ -117,28 +159,24 @@ export default function CreatePaymentLinkPersonalizeScreen() {
                 onPress={() => setSelectedColor(color)}
               >
                 {selectedColor === color && (
-                  <Text style={styles.checkmark}>✓</Text>
+                  <CheckIcon width={16} height={16} />
                 )}
               </TouchableOpacity>
             ))}
           </View>
         </View>
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text>Anterior</Text>
+          <TouchableOpacity onPress={() => router.back()}>
+            <RetornarIcon width={150} height={80} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.nextButton, isLoading && styles.nextButtonDisabled]} 
             onPress={handleCreateLink}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <>
-                <Text style={styles.nextButtonText}>Criar link</Text>
-                <Text style={styles.checkmark}>✓</Text>
-              </>
+              <CriarLinkIcon width={150} height={80} />
             )}
           </TouchableOpacity>
         </View>
@@ -175,14 +213,23 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  titleContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 20,
     paddingBottom: 10,
     borderBottomWidth: 3,
     borderBottomColor: '#6200EE',
     alignSelf: 'flex-start',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  titleBlue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.blue['01'],
   },
   uploadContainer: {
     borderWidth: 2,
@@ -200,19 +247,30 @@ const styles = StyleSheet.create({
     color: 'blue',
     fontWeight: 'bold',
   },
+  imagePreviewContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  changeImageButton: {
+    padding: 10,
+  },
+  changeImageText: {
+    color: 'blue',
+    fontWeight: 'bold',
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
   },
-  colorSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
+  headerIconContainer: {
     marginBottom: 20,
   },
   colorGrid: {
@@ -223,7 +281,7 @@ const styles = StyleSheet.create({
   colorSwatch: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 8,
     marginBottom: 15,
     justifyContent: 'center',
     alignItems: 'center',
@@ -237,39 +295,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
   },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 30,
-  },
-  nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A237E',
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 30,
-  },
-  nextButtonDisabled: {
-    opacity: 0.7,
-  },
-  nextButtonText: {
-    color: 'white',
-    marginRight: 10,
-    fontWeight: 'bold',
-  },
-  checkmark: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
+
   errorContainer: {
     flex: 1,
     justifyContent: 'center',

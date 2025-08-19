@@ -2,17 +2,20 @@ import { ThemedText } from '@/components/ThemedText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { TransactionList } from '@/components/wallet/TransactionList';
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text } from 'react-native';
+import { useState } from 'react';
 import TransactionMetrics from '../../components/transactions/TransactionMetrics';
 import FilterIcon from '../../images/transações/Filter Container.svg';
 import BaraDePesquisa from '../../images/link de pagamento/bara de pesquisa.svg';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useTransactionMetrics } from '../../hooks/useTransactionMetrics';
+import PeriodFilterModal from '../../components/home/PeriodFilterModal';
 
 export default function TransactionsScreen() {
   const router = useRouter();
   const transactions: any[] = []; // Array vazio - sem dados mockados
-  const { transactionMetrics, isLoading, error, refreshData } = useTransactionMetrics();
+  const { transactionMetrics, isLoading, error, refreshData, updatePeriod, currentPeriod } = useTransactionMetrics();
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -82,7 +85,10 @@ export default function TransactionsScreen() {
                 placeholderTextColor="#A0A0A0"
               />
             </View>
-            <TouchableOpacity style={styles.filterButton}>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setFilterModalVisible(true)}
+            >
               <FilterIcon width={58} height={58} />
             </TouchableOpacity>
           </View>
@@ -94,6 +100,13 @@ export default function TransactionsScreen() {
           />
         </View>
       </ScrollView>
+      
+      <PeriodFilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelectPeriod={updatePeriod}
+        currentPeriod={currentPeriod}
+      />
     </View>
   );
 }

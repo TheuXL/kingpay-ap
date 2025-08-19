@@ -10,6 +10,7 @@ import MovimentacaoIcon from '../../images/gestão/movimentação do mês.svg';
 import { Colors } from '../../constants/Colors';
 import BackIcon from '../../images/icon_back.svg';
 import { useManagementData } from '../../hooks/useManagementData';
+import PeriodFilterModal from '../../components/home/PeriodFilterModal';
 
 const { width } = Dimensions.get('window');
 const cardWidth = width - 40; // 20 padding on each side
@@ -18,9 +19,10 @@ export default function ManagementScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
   const [activeIndex, setActiveIndex] = useState(0);
   const [showPeriodSelector, setShowPeriodSelector] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const router = useRouter();
-  const { managementData, isLoading, error, refreshData } = useManagementData();
+  const { managementData, isLoading, error, refreshData, updatePeriod, currentPeriod } = useManagementData();
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -60,7 +62,7 @@ export default function ManagementScreen() {
 
   const handlePeriodPress = () => {
     console.log('Period selector pressed!');
-    setShowPeriodSelector(true);
+    setFilterModalVisible(true);
   };
 
   if (isLoading) {
@@ -104,7 +106,7 @@ export default function ManagementScreen() {
               style={styles.periodSelector}
               onPress={handlePeriodPress}
             >
-              <Text>{selectedPeriod}</Text>
+              <Text style={styles.periodText}>{currentPeriod}</Text>
             </TouchableOpacity>
           </View>
           <ScrollView
@@ -152,6 +154,13 @@ export default function ManagementScreen() {
           </View>
         </View>
       </ScrollView>
+      
+      <PeriodFilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelectPeriod={updatePeriod}
+        currentPeriod={currentPeriod}
+      />
     </View>
   );
 }
@@ -171,6 +180,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: Colors.gray['03'],
+    fontFamily: 'Inter',
   },
   errorContainer: {
     flex: 1,
@@ -184,11 +194,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.red['01'],
     marginBottom: 10,
+    fontFamily: 'Inter',
   },
   errorSubtext: {
     fontSize: 14,
     color: Colors.gray['03'],
     textAlign: 'center',
+    fontFamily: 'Inter',
   },
   header: {
     backgroundColor: Colors.white['04'],
@@ -210,6 +222,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     textAlign: 'center',
     flex: 1,
+    fontFamily: 'Inter',
   },
   headerSpacer: {
     width: 32,
@@ -229,8 +242,9 @@ const styles = StyleSheet.create({
   },
   subHeaderTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#475569',
+    fontWeight: 'bold',
+    color: Colors.blue['04'],
+    fontFamily: 'Inter',
   },
   periodSelector: {
     flexDirection: 'row',
@@ -239,6 +253,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
+  },
+  periodText: {
+    fontSize: 14,
+    color: Colors.blue['04'],
+    fontFamily: 'Inter',
   },
   carousel: {
     flexDirection: 'row',
@@ -289,15 +308,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   actionButtonText: {
-    color: 'white',
+    color: Colors.white['01'],
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+    fontFamily: 'Inter',
   },
   actionNumber: {
-    color: 'white',
+    color: Colors.white['01'],
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Inter',
   },
   movements: {
     paddingHorizontal: 20,
@@ -307,8 +328,9 @@ const styles = StyleSheet.create({
   movementsTitle: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#475569',
+    color: Colors.blue['04'],
     marginBottom: 10,
+    fontFamily: 'Inter',
   },
   movementItem: {
     backgroundColor: '#FFFFFF',
@@ -320,7 +342,8 @@ const styles = StyleSheet.create({
   },
   movementText: {
     fontSize: 16,
-    color: '#1E293B',
+    color: Colors.blue['04'],
     fontWeight: '600',
+    fontFamily: 'Inter',
   },
 });

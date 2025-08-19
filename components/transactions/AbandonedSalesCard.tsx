@@ -12,9 +12,9 @@ interface AbandonedSalesCardProps {
 export default function AbandonedSalesCard({ transactionMetrics, formatCurrency }: AbandonedSalesCardProps) {
   const totalAbandonedSales = transactionMetrics?.totalAbandonedSales || 0;
   const totalAbandonedAmount = transactionMetrics?.totalAbandonedAmount || 0;
-  const abandonedPixAmount = transactionMetrics?.abandonedPixSales ? (transactionMetrics.abandonedPixSales * 100) : 0; // Estimativa
-  const abandonedCardAmount = transactionMetrics?.abandonedCardSales ? (transactionMetrics.abandonedCardSales * 100) : 0; // Estimativa
-  const abandonedBoletoAmount = transactionMetrics?.abandonedBoletoSales ? (transactionMetrics.abandonedBoletoSales * 100) : 0; // Estimativa
+  const abandonedPixAmount = transactionMetrics?.abandonedPixSales || 0;
+  const abandonedCardAmount = transactionMetrics?.abandonedCardSales || 0;
+  const abandonedBoletoAmount = transactionMetrics?.abandonedBoletoSales || 0;
 
   return (
     <View style={styles.card}>

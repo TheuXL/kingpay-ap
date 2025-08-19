@@ -11,9 +11,9 @@ interface ApprovedSalesCardProps {
 export default function ApprovedSalesCard({ transactionMetrics, formatCurrency }: ApprovedSalesCardProps) {
   const totalApprovedSales = transactionMetrics?.totalApprovedSales || 0;
   const totalApprovedAmount = transactionMetrics?.totalApprovedAmount || 0;
-  const approvedPixAmount = transactionMetrics?.approvedPixSales ? (transactionMetrics.approvedPixSales * 100) : 0; // Estimativa
-  const approvedCardAmount = transactionMetrics?.approvedCardSales ? (transactionMetrics.approvedCardSales * 100) : 0; // Estimativa
-  const approvedBoletoAmount = transactionMetrics?.approvedBoletoSales ? (transactionMetrics.approvedBoletoSales * 100) : 0; // Estimativa
+  const approvedPixAmount = transactionMetrics?.approvedPixSales || 0;
+  const approvedCardAmount = transactionMetrics?.approvedCardSales || 0;
+  const approvedBoletoAmount = transactionMetrics?.approvedBoletoSales || 0;
 
   return (
     <View style={styles.card}>

@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   legendValue: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: Colors.black['02'],
   },
 });

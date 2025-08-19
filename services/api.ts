@@ -400,7 +400,6 @@ class KingPayAPI {
     try {
       console.log('📊 === BUSCANDO DADOS DO DASHBOARD ===');
       console.log('📅 Período:', `${startDate} até ${endDate}`);
-      console.log('🏢 Company ID:', companyId || 'N/A');
       
       const token = await this.getStoredToken();
       if (!token) {
@@ -408,10 +407,38 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
+      // Se não foi fornecido companyId, buscar automaticamente
+      let finalCompanyId = companyId;
+      if (!finalCompanyId) {
+        // Obter user ID do token
+        const userId = await SecureStore.getItemAsync('user_id');
+        if (!userId) {
+          console.log('❌ User ID não encontrado');
+          return { success: false, error: 'User ID não encontrado' };
+        }
+
+        // Buscar dados do usuário para obter o company ID
+        const userData = await this.getUserData(userId);
+        if (!userData.success || !userData.data) {
+          console.log('❌ Não foi possível obter dados do usuário');
+          return { success: false, error: 'Não foi possível obter dados do usuário' };
+        }
+
+        // A resposta da API tem estrutura { success: true, user: { company: "..." } }
+        const responseData = userData.data as any;
+        finalCompanyId = responseData.user?.company || responseData.company;
+        if (!finalCompanyId) {
+          console.log('❌ Company ID não encontrado');
+          return { success: false, error: 'Company ID não encontrado' };
+        }
+      }
+
+      console.log('🏢 Company ID:', finalCompanyId);
+
       const params = new URLSearchParams({
         start_date: startDate,
         end_date: endDate,
-        ...(companyId && { company_id: companyId })
+        company_id: finalCompanyId,
       });
 
       const url = `${supabaseUrl}/functions/v1/dados-dashboard?${params}`;
@@ -529,7 +556,7 @@ class KingPayAPI {
   }
 
   // Método para buscar dados de gestão
-  async getManagementData(): Promise<ApiResponse<ManagementData>> {
+  async getManagementData(startDate?: string, endDate?: string): Promise<ApiResponse<ManagementData>> {
     try {
       console.log('📊 === BUSCANDO DADOS DE GESTÃO ===');
       
@@ -539,13 +566,23 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
-      // Buscar dados do dashboard
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      // Usar datas fornecidas ou calcular período padrão (30 dias)
+      let startDateStr: string;
+      let endDateStr: string;
 
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
+      if (startDate && endDate) {
+        startDateStr = startDate;
+        endDateStr = endDate;
+        console.log('📅 Usando período fornecido:', startDateStr, 'até', endDateStr);
+      } else {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+
+        startDateStr = startDate.toISOString().split('T')[0];
+        endDateStr = endDate.toISOString().split('T')[0];
+        console.log('📅 Usando período padrão (30 dias):', startDateStr, 'até', endDateStr);
+      }
 
       const dashboardResponse = await this.getDashboardData(startDateStr, endDateStr);
       
@@ -608,7 +645,7 @@ class KingPayAPI {
   }
 
   // Método para buscar links de pagamento
-  async getPaymentLinks(): Promise<ApiResponse<PaymentLink[]>> {
+  async getPaymentLinks(startDate?: string, endDate?: string): Promise<ApiResponse<PaymentLink[]>> {
     try {
       console.log('🔗 === BUSCANDO LINKS DE PAGAMENTO ===');
       
@@ -642,8 +679,16 @@ class KingPayAPI {
 
       console.log('🏢 Company ID:', companyId);
 
-      // Construir URL com filtro por company
-      const url = `${supabaseUrl}/functions/v1/link-pagamentos?company=${companyId}`;
+      // Construir URL com filtros
+      let url = `${supabaseUrl}/functions/v1/link-pagamentos?company=${companyId}`;
+      
+      // Adicionar filtros de data se fornecidos
+      if (startDate && endDate) {
+        url += `&start_date=${startDate}&end_date=${endDate}`;
+        console.log('📅 Filtros de data aplicados:', startDate, 'até', endDate);
+      } else {
+        console.log('📅 Sem filtros de data - usando período padrão');
+      }
       
       console.log('📤 === REQUISIÇÃO LINKS ===');
       console.log('Método: GET');
@@ -710,6 +755,13 @@ class KingPayAPI {
       console.log('🔗 === CRIANDO NOVO LINK DE PAGAMENTO ===');
       console.log('Dados:', JSON.stringify(data, null, 2));
 
+      // Verificar se o usuário está autenticado antes de prosseguir
+      const isAuth = await this.isAuthenticated();
+      if (!isAuth) {
+        console.log('❌ Usuário não autenticado');
+        return { success: false, error: 'Usuário não autenticado. Faça login novamente.' };
+      }
+
       const token = await this.getStoredToken();
       if (!token) {
         console.log('❌ Token não encontrado');
@@ -750,10 +802,22 @@ class KingPayAPI {
         };
       } else {
         console.log('❌ === ERRO AO CRIAR LINK ===');
-        console.log('Erro:', result.error || 'Erro desconhecido');
+        console.log('Status:', response.status);
+        console.log('Erro:', result.error || result.message || 'Erro desconhecido');
+        
+        // Tratamento específico para token inválido
+        if (response.status === 401) {
+          console.log('🔑 Token inválido, limpando cache...');
+          await this.clearTokenCache();
+          return {
+            success: false,
+            error: 'Sessão expirada. Faça login novamente.',
+          };
+        }
+        
         return {
           success: false,
-          error: result.error || 'Erro ao criar link de pagamento',
+          error: result.error || result.message || 'Erro ao criar link de pagamento',
         };
       }
     } catch (error) {
@@ -832,7 +896,7 @@ class KingPayAPI {
   }
 
   // Método para buscar dados de métricas de transações
-  async getTransactionMetricsData(): Promise<ApiResponse<TransactionMetricsData>> {
+  async getTransactionMetricsData(startDate?: string, endDate?: string): Promise<ApiResponse<TransactionMetricsData>> {
     try {
       console.log('📊 === BUSCANDO MÉTRICAS DE TRANSAÇÕES ===');
       
@@ -842,13 +906,23 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
-      // Buscar dados do dashboard
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      // Usar datas fornecidas ou calcular período padrão (30 dias)
+      let startDateStr: string;
+      let endDateStr: string;
 
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
+      if (startDate && endDate) {
+        startDateStr = startDate;
+        endDateStr = endDate;
+        console.log('📅 Usando período fornecido:', startDateStr, 'até', endDateStr);
+      } else {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+
+        startDateStr = startDate.toISOString().split('T')[0];
+        endDateStr = endDate.toISOString().split('T')[0];
+        console.log('📅 Usando período padrão (30 dias):', startDateStr, 'até', endDateStr);
+      }
 
       const dashboardResponse = await this.getDashboardData(startDateStr, endDateStr);
       
@@ -857,17 +931,17 @@ class KingPayAPI {
         
         // Calcular métricas baseadas nos dados do dashboard
         const transactionMetrics: TransactionMetricsData = {
-          // Vendas Aprovadas
-          approvedPixSales: data.countPixPaid || 0,
-          approvedCardSales: data.countCardPaid || 0,
-          approvedBoletoSales: data.countBoletoPaid || 0,
+          // Vendas Aprovadas - VALORES EM DINHEIRO
+          approvedPixSales: data.sumPixPaid || 0,
+          approvedCardSales: data.sumCardPaid || 0,
+          approvedBoletoSales: data.sumBoletoPaid || 0,
           totalApprovedSales: (data.countPixPaid || 0) + (data.countCardPaid || 0) + (data.countBoletoPaid || 0),
           totalApprovedAmount: (data.sumPixPaid || 0) + (data.sumCardPaid || 0) + (data.sumBoletoPaid || 0),
           
-          // Vendas Abandonadas (calculado como total - aprovadas)
-          abandonedPixSales: (data.countPixTotal || 0) - (data.countPixPaid || 0),
-          abandonedCardSales: (data.countCardTotal || 0) - (data.countCardPaid || 0),
-          abandonedBoletoSales: (data.countBoletoTotal || 0) - (data.countBoletoPaid || 0),
+          // Vendas Abandonadas - VALORES EM DINHEIRO (calculado como total - aprovadas)
+          abandonedPixSales: (data.sumPix || 0) - (data.sumPixPaid || 0),
+          abandonedCardSales: (data.sumCard || 0) - (data.sumCardPaid || 0),
+          abandonedBoletoSales: (data.sumBoleto || 0) - (data.sumBoletoPaid || 0),
           totalAbandonedSales: (data.countTotal || 0) - (data.countPaid || 0),
           totalAbandonedAmount: (data.sumPix || 0) + (data.sumCard || 0) + (data.sumBoleto || 0) - (data.sumPaid || 0),
           
@@ -877,7 +951,7 @@ class KingPayAPI {
           boletoCommission: Math.round((data.sumBoletoPaid || 0) * 0.02),
           totalCommission: Math.round(((data.sumPixPaid || 0) + (data.sumCardPaid || 0) + (data.sumBoletoPaid || 0)) * 0.02),
           
-          // Estornos
+          // Estornos - VALORES EM DINHEIRO
           pixRefunds: data.sumRefunded || 0, // Usando o total de estornos
           cardRefunds: data.sumRefunded || 0, // Usando o total de estornos
           boletoRefunds: data.sumRefunded || 0, // Usando o total de estornos
@@ -885,12 +959,34 @@ class KingPayAPI {
         };
 
         console.log('✅ === MÉTRICAS DE TRANSAÇÕES OBTIDAS ===');
-        console.log('✅ Vendas Aprovadas:', transactionMetrics.totalApprovedSales);
-        console.log('💰 Valor Aprovado:', transactionMetrics.totalApprovedAmount);
-        console.log('❌ Vendas Abandonadas:', transactionMetrics.totalAbandonedSales);
-        console.log('💰 Valor Abandonado:', transactionMetrics.totalAbandonedAmount);
-        console.log('💸 Comissão Total:', transactionMetrics.totalCommission);
-        console.log('🔄 Estornos Total:', transactionMetrics.totalRefunds);
+        console.log('✅ Vendas Aprovadas (quantidade):', transactionMetrics.totalApprovedSales);
+        console.log('💰 Valor Aprovado (centavos):', transactionMetrics.totalApprovedAmount);
+        console.log('💰 Valor Aprovado (R$):', (transactionMetrics.totalApprovedAmount / 100).toFixed(2));
+        console.log('  - PIX Aprovado (centavos):', transactionMetrics.approvedPixSales);
+        console.log('  - PIX Aprovado (R$):', (transactionMetrics.approvedPixSales / 100).toFixed(2));
+        console.log('  - Cartão Aprovado (centavos):', transactionMetrics.approvedCardSales);
+        console.log('  - Cartão Aprovado (R$):', (transactionMetrics.approvedCardSales / 100).toFixed(2));
+        console.log('  - Boleto Aprovado (centavos):', transactionMetrics.approvedBoletoSales);
+        console.log('  - Boleto Aprovado (R$):', (transactionMetrics.approvedBoletoSales / 100).toFixed(2));
+        console.log('❌ Vendas Abandonadas (quantidade):', transactionMetrics.totalAbandonedSales);
+        console.log('💰 Valor Abandonado (centavos):', transactionMetrics.totalAbandonedAmount);
+        console.log('💰 Valor Abandonado (R$):', (transactionMetrics.totalAbandonedAmount / 100).toFixed(2));
+        console.log('  - PIX Abandonado (centavos):', transactionMetrics.abandonedPixSales);
+        console.log('  - PIX Abandonado (R$):', (transactionMetrics.abandonedPixSales / 100).toFixed(2));
+        console.log('  - Cartão Abandonado (centavos):', transactionMetrics.abandonedCardSales);
+        console.log('  - Cartão Abandonado (R$):', (transactionMetrics.abandonedCardSales / 100).toFixed(2));
+        console.log('  - Boleto Abandonado (centavos):', transactionMetrics.abandonedBoletoSales);
+        console.log('  - Boleto Abandonado (R$):', (transactionMetrics.abandonedBoletoSales / 100).toFixed(2));
+        console.log('💸 Comissão Total (centavos):', transactionMetrics.totalCommission);
+        console.log('💸 Comissão Total (R$):', (transactionMetrics.totalCommission / 100).toFixed(2));
+        console.log('  - Comissão PIX (centavos):', transactionMetrics.pixCommission);
+        console.log('  - Comissão PIX (R$):', (transactionMetrics.pixCommission / 100).toFixed(2));
+        console.log('  - Comissão Cartão (centavos):', transactionMetrics.cardCommission);
+        console.log('  - Comissão Cartão (R$):', (transactionMetrics.cardCommission / 100).toFixed(2));
+        console.log('  - Comissão Boleto (centavos):', transactionMetrics.boletoCommission);
+        console.log('  - Comissão Boleto (R$):', (transactionMetrics.boletoCommission / 100).toFixed(2));
+        console.log('🔄 Estornos Total (centavos):', transactionMetrics.totalRefunds);
+        console.log('🔄 Estornos Total (R$):', (transactionMetrics.totalRefunds / 100).toFixed(2));
         
         return {
           success: true,

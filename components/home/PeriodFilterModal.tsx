@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { PeriodFilter } from '@/hooks/useHomeData';
 import CalendarioIcon from '@/images/calendario.svg';
+import CloseIcon from '@/images/close.svg';
 
 interface PeriodFilterModalProps {
   visible: boolean;
@@ -32,13 +32,15 @@ export default function PeriodFilterModal({
           {/* Handle */}
           <View style={styles.handle} />
           
-          {/* Header */}
+          {/* Header with Close Button */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close" size={24} color="black" />
+              <CloseIcon width={15} height={15} />
             </TouchableOpacity>
-            <Text style={styles.title}>Selecione o período</Text>
           </View>
+          
+          {/* Title */}
+          <Text style={styles.title}>Selecione o período</Text>
 
           {/* Period Options */}
           <View style={styles.optionsContainer}>
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.white['01'],
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -100,23 +102,22 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginBottom: 20,
   },
+
   header: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'flex-start',
+    marginBottom: 10,
   },
   closeButton: {
-    position: 'absolute',
-    left: 0,
-    zIndex: 1,
+    padding: 4,
   },
   title: {
-    flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     color: Colors.black['01'],
+    marginBottom: 20,
   },
   optionsContainer: {
     width: '100%',
@@ -127,8 +128,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 15,
     paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray['04'],
   },
   optionContent: {
     flexDirection: 'row',

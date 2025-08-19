@@ -16,12 +16,14 @@ import InativoIcon from '@/images/link de pagamento/inativo.svg';
 import BackIcon from '@/images/icon_back.svg';
 import CriarNovoLink from '@/images/link de pagamento/Criar novo link.svg';
 import { usePaymentLinks } from '../../hooks/usePaymentLinks';
+import PeriodFilterModal from '../../components/home/PeriodFilterModal';
 
 export default function PaymentLinkScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { paymentLinks, isLoading, error, refreshData, activeLinks, inactiveLinks } = usePaymentLinks();
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const { paymentLinks, isLoading, error, refreshData, activeLinks, inactiveLinks, updatePeriod, currentPeriod } = usePaymentLinks();
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -94,7 +96,10 @@ export default function PaymentLinkScreen() {
                 placeholderTextColor={Colors.gray['02']}
               />
             </View>
-            <TouchableOpacity style={styles.filterButton}>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setFilterModalVisible(true)}
+            >
               <FilterButton />
             </TouchableOpacity>
           </View>
@@ -142,6 +147,13 @@ export default function PaymentLinkScreen() {
         </View>
       </ScrollView>
       <WarningModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+      
+      <PeriodFilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelectPeriod={updatePeriod}
+        currentPeriod={currentPeriod}
+      />
     </View>
   );
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api, PaymentLink } from '../services/api';
 
+export type PeriodFilter = '30 dias' | '15 dias' | 'Ontem' | 'Hoje';
+
 export interface PaymentLinksHook {
   paymentLinks: PaymentLink[];
   isLoading: boolean;
@@ -8,20 +10,52 @@ export interface PaymentLinksHook {
   refreshData: () => void;
   activeLinks: PaymentLink[];
   inactiveLinks: PaymentLink[];
+  updatePeriod: (period: PeriodFilter) => void;
+  currentPeriod: PeriodFilter;
 }
 
 export const usePaymentLinks = () => {
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPeriod, setCurrentPeriod] = useState<PeriodFilter>('30 dias');
 
-  const fetchPaymentLinks = async () => {
+  const calculateDateRange = (period: PeriodFilter): { startDate: string; endDate: string } => {
+    const endDate = new Date();
+    const startDate = new Date();
+
+    switch (period) {
+      case '30 dias':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '15 dias':
+        startDate.setDate(startDate.getDate() - 15);
+        break;
+      case 'Ontem':
+        startDate.setDate(startDate.getDate() - 1);
+        endDate.setDate(endDate.getDate() - 1);
+        break;
+      case 'Hoje':
+        // startDate e endDate já são hoje
+        break;
+    }
+
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+    };
+  };
+
+  const fetchPaymentLinks = async (period: PeriodFilter = currentPeriod) => {
     setIsLoading(true);
     setError(null);
 
     try {
       console.log('🔗 === CARREGANDO LINKS DE PAGAMENTO ===');
-      const result = await api.getPaymentLinks();
+      const { startDate, endDate } = calculateDateRange(period);
+      console.log('📅 Período calculado:', startDate, 'até', endDate, `(${period})`);
+      
+      const result = await api.getPaymentLinks(startDate, endDate);
 
       if (result.success && result.data) {
         console.log('✅ === LINKS OBTIDOS ===');
@@ -47,7 +81,9 @@ export const usePaymentLinks = () => {
 
     try {
       console.log('🔄 === ATUALIZANDO LINKS DE PAGAMENTO ===');
-      const result = await api.getPaymentLinks();
+      const { startDate, endDate } = calculateDateRange(currentPeriod);
+      console.log('📅 Período atual:', startDate, 'até', endDate, `(${currentPeriod})`);
+      const result = await api.getPaymentLinks(startDate, endDate);
 
       if (result.success && result.data) {
         console.log('✅ === LINKS ATUALIZADOS ===');
@@ -74,6 +110,13 @@ export const usePaymentLinks = () => {
     );
   };
 
+  const updatePeriod = (period: PeriodFilter) => {
+    console.log('📅 === ATUALIZANDO PERÍODO ===');
+    console.log('Período selecionado:', period);
+    setCurrentPeriod(period);
+    fetchPaymentLinks(period);
+  };
+
   // Carregar dados apenas uma vez na inicialização
   useEffect(() => {
     fetchPaymentLinks();
@@ -90,5 +133,7 @@ export const usePaymentLinks = () => {
     error,
     refreshData,
     updateLinkInList,
+    updatePeriod,
+    currentPeriod,
   };
 };
