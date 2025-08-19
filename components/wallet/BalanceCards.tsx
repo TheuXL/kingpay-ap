@@ -6,6 +6,12 @@ import AReceberIcon from '../../images/carteira/icon A receber.svg';
 import ReservaFinanceiraIcon from '../../images/carteira/icon Reserva Financeira.svg';
 import SetaSolicitaIcon from '../../images/carteira/seta solicita....svg';
 import { Colors } from '@/constants/Colors';
+import { WalletData } from '../../services/api';
+
+interface BalanceCardsProps {
+  walletData: WalletData | null;
+  formatCurrency: (value: number) => string;
+}
 
 const balanceIcons = {
   'Saldo disponível (Pix)': <SaldoPixIcon width={24} height={24} />,
@@ -14,35 +20,35 @@ const balanceIcons = {
   'Reserva Financeira': <ReservaFinanceiraIcon width={24} height={24} />,
 };
 
-const balanceData = [
-  {
-    type: 'Saldo disponível (Pix)' as const,
-    amount: 'R$ 138.241,15',
-    color: Colors.blue['01'],
-    action: 'Solicitar saque',
-  },
-  {
-    type: 'Saldo disponível (Cartão)' as const,
-    amount: 'R$ 138.241,15',
-    color: Colors.blue['03'],
-    action: 'Solicitar saque',
-  },
-  {
-    type: 'A receber' as const,
-    amount: 'R$ 138.241,15',
-    color: Colors.green['02'],
-    action: 'Solicitar saque',
-  },
-  {
-    type: 'Reserva Financeira' as const,
-    amount: 'R$ 138.241,15',
-    color: Colors.white['01'],
-    textColor: '#000000',
-    description: 'Valor retido para garantir a segurança de suas transações.',
-  },
-];
+export default function BalanceCards({ walletData, formatCurrency }: BalanceCardsProps) {
+  const balanceData = [
+    {
+      type: 'Saldo disponível (Pix)' as const,
+      amount: formatCurrency(walletData?.saldoPix || 0),
+      color: Colors.blue['01'],
+      action: 'Solicitar saque',
+    },
+    {
+      type: 'Saldo disponível (Cartão)' as const,
+      amount: formatCurrency(walletData?.saldoCartao || 0),
+      color: Colors.blue['03'],
+      action: 'Solicitar saque',
+    },
+    {
+      type: 'A receber' as const,
+      amount: formatCurrency(walletData?.valorReceber || 0),
+      color: Colors.green['02'],
+      action: 'Solicitar saque',
+    },
+    {
+      type: 'Reserva Financeira' as const,
+      amount: formatCurrency(walletData?.reservaFinanceira || 0),
+      color: Colors.white['01'],
+      textColor: '#000000',
+      description: 'Valor retido para garantir a segurança de suas transações.',
+    },
+  ];
 
-export default function BalanceCards() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
       {balanceData.map((card, index) => (

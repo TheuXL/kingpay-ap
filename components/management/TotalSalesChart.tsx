@@ -2,8 +2,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import TotalVendasIcon from '../../images/gestão/total de vendas.svg';
 import { Colors } from '../../constants/Colors';
+import { ManagementData } from '../../services/api';
 
-export default function TotalSalesChart() {
+interface TotalSalesChartProps {
+  managementData: ManagementData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function TotalSalesChart({ managementData, formatCurrency }: TotalSalesChartProps) {
+  const totalSales = managementData?.totalSales || 0;
+  const totalTransactions = managementData?.totalTransactions || 0;
+  const averageTicket = managementData?.averageTicket || 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -11,7 +21,7 @@ export default function TotalSalesChart() {
         <Text style={styles.expandButton}>{'>'}</Text>
       </View>
 
-      <Text style={styles.totalValue}>R$ 24.678,12</Text>
+      <Text style={styles.totalValue}>{formatCurrency(totalSales)}</Text>
       
       <View style={styles.chartContainer}>
         <TotalVendasIcon width={280} height={180} />
@@ -20,11 +30,11 @@ export default function TotalSalesChart() {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <Text style={styles.legendText}>Número de vendas</Text>
-          <Text style={styles.legendValue}>17.274</Text>
+          <Text style={styles.legendValue}>{totalTransactions}</Text>
         </View>
         <View style={styles.legendItem}>
           <Text style={styles.legendText}>Ticket Médio</Text>
-          <Text style={styles.legendValue}>R$ 67,62</Text>
+          <Text style={styles.legendValue}>{formatCurrency(averageTicket)}</Text>
         </View>
       </View>
     </View>

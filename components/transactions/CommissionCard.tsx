@@ -1,14 +1,25 @@
 import { StyleSheet, Text, View } from 'react-native';
 import ComissaoIcon from '../../images/transações/Icon comissão.svg';
 import { Colors } from '@/constants/Colors';
+import { TransactionMetricsData } from '../../services/api';
 
-export default function CommissionCard() {
+interface CommissionCardProps {
+  transactionMetrics: TransactionMetricsData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function CommissionCard({ transactionMetrics, formatCurrency }: CommissionCardProps) {
+  const totalCommission = transactionMetrics?.totalCommission || 0;
+  const pixCommission = transactionMetrics?.pixCommission || 0;
+  const cardCommission = transactionMetrics?.cardCommission || 0;
+  const boletoCommission = transactionMetrics?.boletoCommission || 0;
+
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.infoSection}>
           <Text style={styles.title}>Comissão</Text>
-          <Text style={styles.value}>R$ 500,14</Text>
+          <Text style={styles.value}>{formatCurrency(totalCommission)}</Text>
           <View style={styles.percentageContainer}>
             <Text style={styles.percentage}>+0,8%</Text>
           </View>
@@ -20,15 +31,15 @@ export default function CommissionCard() {
       <View style={styles.divider} />
       <View style={styles.item}>
         <Text style={styles.label}>Pix</Text>
-        <Text style={styles.itemValue}>8%</Text>
+        <Text style={styles.itemValue}>{formatCurrency(pixCommission)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Cartão</Text>
-        <Text style={styles.itemValue}>12%</Text>
+        <Text style={styles.itemValue}>{formatCurrency(cardCommission)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Boleto</Text>
-        <Text style={styles.itemValue}>16%</Text>
+        <Text style={styles.itemValue}>{formatCurrency(boletoCommission)}</Text>
       </View>
     </View>
   );

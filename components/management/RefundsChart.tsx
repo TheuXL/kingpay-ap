@@ -2,13 +2,26 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import ReembolsosIcon from '../../images/gestão/reebolsos.svg';
 import { Colors } from '../../constants/Colors';
+import { ManagementData } from '../../services/api';
 
-const data = [
-  { label: 'Estornos', value: 'R$ 17.274,68', color: Colors.blue['02'] },
-  { label: 'Chargeback', value: 'R$ 4.935,62', color: Colors.violet['01'] },
-];
+interface RefundsChartProps {
+  managementData: ManagementData | null;
+  formatCurrency: (value: number) => string;
+  formatPercentage: (value: number) => string;
+}
 
-export default function RefundsChart() {
+export default function RefundsChart({ managementData, formatCurrency, formatPercentage }: RefundsChartProps) {
+  const refunds = managementData?.refunds || 0;
+  const chargebacks = managementData?.chargebacks || 0;
+  const totalRefunds = refunds + chargebacks;
+  const totalSales = managementData?.totalSales || 1; // Evitar divisão por zero
+  const refundPercentage = totalSales > 0 ? (totalRefunds / totalSales) * 100 : 0;
+
+  const data = [
+    { label: 'Estornos', value: formatCurrency(refunds), color: Colors.blue['02'] },
+    { label: 'Chargeback', value: formatCurrency(chargebacks), color: Colors.violet['01'] },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -19,7 +32,7 @@ export default function RefundsChart() {
       <View style={styles.chartContainer}>
         <ReembolsosIcon width={200} height={200} />
         <View style={styles.centerContent}>
-          <Text style={styles.centerValue}>12,8%</Text>
+          <Text style={styles.centerValue}>{formatPercentage(refundPercentage)}</Text>
         </View>
       </View>
 

@@ -5,17 +5,14 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import IconCartaoAprovado from '../../images/transações/TransactionIconCartaoAprovado.svg';
 import IconCartaoFalhado from '../../images/transações/TransactionIconCartaoFalhado.svg';
 import IconPix from '../../images/transações/TransactionIconPix.svg';
+import { WalletTransaction } from '../../services/api';
 
-export type Transaction = {
-  name: string;
-  email: string;
-  amount: string;
-  date: string;
-  type: 'pix' | 'card_approved' | 'card_failed';
-};
+export type Transaction = WalletTransaction;
 
 type TransactionListProps = {
   transactions: Transaction[];
+  formatCurrency: (value: number) => string;
+  formatDate: (date: string) => string;
 };
 
 const transactionIcons = {
@@ -24,24 +21,32 @@ const transactionIcons = {
   card_failed: IconCartaoFalhado,
 };
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, formatCurrency, formatDate }: TransactionListProps) {
   const router = useRouter();
+
+  if (transactions.length === 0) {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <ThemedText style={styles.emptyStateText}>Nenhuma movimentação encontrada</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View>
       {transactions.map((transaction, index) => {
         const Icon = transactionIcons[transaction.type];
         return (
-          <TouchableOpacity key={index} style={styles.transactionItem} onPress={() => router.push('/(app)/transaction-details')}>
+          <TouchableOpacity key={transaction.id || index} style={styles.transactionItem} onPress={() => router.push('/(app)/transaction-details')}>
             <View style={styles.transactionIcon}>
               <Icon width={60} height={60} />
             </View>
             <View style={styles.transactionDetails}>
               <ThemedText style={styles.transactionName}>{transaction.name}</ThemedText>
               <ThemedText style={styles.transactionEmail}>{transaction.email}</ThemedText>
-              <ThemedText style={styles.transactionAmount}>{transaction.amount}</ThemedText>
+              <ThemedText style={styles.transactionAmount}>{formatCurrency(transaction.amount)}</ThemedText>
             </View>
-            <ThemedText style={styles.transactionDate}>{transaction.date}</ThemedText>
+            <ThemedText style={styles.transactionDate}>{formatDate(transaction.date)}</ThemedText>
           </TouchableOpacity>
         );
       })}
@@ -55,8 +60,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
     paddingVertical: 16,
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#F0F0F0',
   },
   transactionIcon: {
     marginRight: 16,
@@ -81,5 +84,14 @@ const styles = StyleSheet.create({
   transactionDate: {
     fontSize: 14,
     color: '#666',
+  },
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 50,
+  },
+  emptyStateText: {
+    color: 'gray',
+    fontSize: 16,
   },
 });

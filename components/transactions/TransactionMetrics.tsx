@@ -5,8 +5,14 @@ import AbandonedSalesCard from './AbandonedSalesCard';
 import ApprovedSalesCard from './ApprovedSalesCard';
 import CommissionCard from './CommissionCard';
 import RefundsCard from './RefundsCard';
+import { TransactionMetricsData } from '../../services/api';
 
-export default function TransactionMetrics() {
+interface TransactionMetricsProps {
+  transactionMetrics: TransactionMetricsData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function TransactionMetrics({ transactionMetrics, formatCurrency }: TransactionMetricsProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
 
   return (
@@ -24,10 +30,10 @@ export default function TransactionMetrics() {
         style={styles.cardsContainer}
         contentContainerStyle={styles.cardsContentContainer}
       >
-        <ApprovedSalesCard />
-        <AbandonedSalesCard />
-        <CommissionCard />
-        <RefundsCard />
+        <ApprovedSalesCard transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
+        <AbandonedSalesCard transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
+        <CommissionCard transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
+        <RefundsCard transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
       </ScrollView>
     </View>
   );

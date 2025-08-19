@@ -5,11 +5,27 @@ import NotificationsIcon from '../../images/home/Notifications Icon.svg';
 import ContaAtualIcon from '../../images/home/icon conta atual perfil.svg';
 import MultiHillsIcon from '../../images/home/multihills.svg';
 import VernellTechIcon from '../../images/home/vernell tech.svg';
+import { useAuth } from '../../contexts/AuthContext';
 
-export default function AccountSwitcher({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+interface AccountSwitcherProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export default function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const router = useRouter();
+  const { user } = useAuth();
+
+  // Extrair nome do usuário do email
+  const getUserName = (): string => {
+    if (!user?.email) return 'Usuário';
+    const emailName = user.email.split('@')[0];
+    // Capitalizar primeira letra
+    return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+  };
+
   const currentAccount = {
-    name: 'Gabriel Souza',
+    name: getUserName(),
     type: 'Conta empresarial',
     icon: <ContaAtualIcon width={50} height={50} />,
   };

@@ -2,14 +2,26 @@ import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import VendasAbandonadasIcon from '../../images/transações/Icon vendas abandonadas.svg';
 import { Colors } from '@/constants/Colors';
+import { TransactionMetricsData } from '../../services/api';
 
-export default function AbandonedSalesCard() {
+interface AbandonedSalesCardProps {
+  transactionMetrics: TransactionMetricsData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function AbandonedSalesCard({ transactionMetrics, formatCurrency }: AbandonedSalesCardProps) {
+  const totalAbandonedSales = transactionMetrics?.totalAbandonedSales || 0;
+  const totalAbandonedAmount = transactionMetrics?.totalAbandonedAmount || 0;
+  const abandonedPixAmount = transactionMetrics?.abandonedPixSales ? (transactionMetrics.abandonedPixSales * 100) : 0; // Estimativa
+  const abandonedCardAmount = transactionMetrics?.abandonedCardSales ? (transactionMetrics.abandonedCardSales * 100) : 0; // Estimativa
+  const abandonedBoletoAmount = transactionMetrics?.abandonedBoletoSales ? (transactionMetrics.abandonedBoletoSales * 100) : 0; // Estimativa
+
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.infoSection}>
-          <Text style={styles.title}>42 vendas abandonadas</Text>
-          <Text style={styles.value}>R$ 1.579,18</Text>
+          <Text style={styles.title}>{totalAbandonedSales} vendas abandonadas</Text>
+          <Text style={styles.value}>{formatCurrency(totalAbandonedAmount)}</Text>
           <View style={styles.percentageContainer}>
             <Text style={styles.percentage}>+1,2%</Text>
           </View>
@@ -21,15 +33,15 @@ export default function AbandonedSalesCard() {
       <View style={styles.divider} />
       <View style={styles.item}>
         <Text style={styles.label}>Pix</Text>
-        <Text style={styles.itemValue}>R$ 400,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(abandonedPixAmount)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Cartão</Text>
-        <Text style={styles.itemValue}>R$ 350,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(abandonedCardAmount)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Boleto</Text>
-        <Text style={styles.itemValue}>R$ 50,17</Text>
+        <Text style={styles.itemValue}>{formatCurrency(abandonedBoletoAmount)}</Text>
       </View>
     </View>
   );

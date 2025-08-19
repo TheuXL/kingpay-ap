@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import ApprovalRateChart from '../../components/management/ApprovalRateChart';
 import Card from '../../components/management/Card';
 import PaymentMethodsChart from '../../components/management/PaymentMethodsChart';
@@ -9,6 +9,7 @@ import TotalSalesChart from '../../components/management/TotalSalesChart';
 import MovimentacaoIcon from '../../images/gestão/movimentação do mês.svg';
 import { Colors } from '../../constants/Colors';
 import BackIcon from '../../images/icon_back.svg';
+import { useManagementData } from '../../hooks/useManagementData';
 
 const { width } = Dimensions.get('window');
 const cardWidth = width - 40; // 20 padding on each side
@@ -19,12 +20,36 @@ export default function ManagementScreen() {
   const [showPeriodSelector, setShowPeriodSelector] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const router = useRouter();
+  const { managementData, isLoading, error, refreshData } = useManagementData();
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value / 100); // API retorna valores em centavos
+  };
+
+  const formatPercentage = (value: number): string => {
+    return `${value.toFixed(2)}%`;
+  };
 
   const charts = [
-    { title: 'Formas de pagamento', component: <PaymentMethodsChart /> },
-    { title: 'Total de vendas', component: <TotalSalesChart /> },
-    { title: 'Taxa de aprovação', component: <ApprovalRateChart /> },
-    { title: 'Reembolsos', component: <RefundsChart /> },
+    { 
+      title: 'Formas de pagamento', 
+      component: <PaymentMethodsChart managementData={managementData} formatCurrency={formatCurrency} /> 
+    },
+    { 
+      title: 'Total de vendas', 
+      component: <TotalSalesChart managementData={managementData} formatCurrency={formatCurrency} /> 
+    },
+    { 
+      title: 'Taxa de aprovação', 
+      component: <ApprovalRateChart managementData={managementData} formatPercentage={formatPercentage} /> 
+    },
+    { 
+      title: 'Reembolsos', 
+      component: <RefundsChart managementData={managementData} formatCurrency={formatCurrency} formatPercentage={formatPercentage} /> 
+    },
   ];
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -38,6 +63,24 @@ export default function ManagementScreen() {
     setShowPeriodSelector(true);
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.blue['01']} />
+        <Text style={styles.loadingText}>Carregando dados...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Erro ao carregar dados</Text>
+        <Text style={styles.errorSubtext}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -48,7 +91,12 @@ export default function ManagementScreen() {
         <Text style={styles.headerTitle}>Gestão</Text>
         <View style={styles.headerSpacer} />
       </View>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
+        }
+      >
         <View style={styles.contentContainer}>
           <View style={styles.subHeader}>
             <Text style={styles.subHeaderTitle}>Visão geral de vendas</Text>
@@ -84,13 +132,13 @@ export default function ManagementScreen() {
             <TouchableOpacity style={styles.actionButton}>
               <View style={styles.actionContent}>
                 <Text style={styles.actionButtonText}>Links ativos</Text>
-                <Text style={styles.actionNumber}>12</Text>
+                <Text style={styles.actionNumber}>{managementData?.activeLinks || 0}</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton}>
               <View style={styles.actionContent}>
                 <Text style={styles.actionButtonText}>Vendas</Text>
-                <Text style={styles.actionNumber}>789</Text>
+                <Text style={styles.actionNumber}>{managementData?.linkSales || 0}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -112,6 +160,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white['04'],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['04'],
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: Colors.gray['03'],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['04'],
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.red['01'],
+    marginBottom: 10,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: Colors.gray['03'],
+    textAlign: 'center',
   },
   header: {
     backgroundColor: Colors.white['04'],

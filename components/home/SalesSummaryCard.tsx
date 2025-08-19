@@ -1,10 +1,23 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Grafico from '../../images/home/grafico.svg';
+import { DashboardData } from '../../services/api';
 
-export default function SalesSummaryCard({ balanceVisible }: { balanceVisible: boolean }) {
+interface SalesSummaryCardProps {
+  balanceVisible: boolean;
+  dashboardData: DashboardData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function SalesSummaryCard({ balanceVisible, dashboardData, formatCurrency }: SalesSummaryCardProps) {
+  const totalSales = dashboardData?.sumPaid || 0;
+  const pendingSales = dashboardData?.sumPending || 0;
+  const refundedSales = dashboardData?.sumRefunded || 0;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.totalSales}>{balanceVisible ? 'R$ 138.241,15' : '*******'}</Text>
+      <Text style={styles.totalSales}>
+        {balanceVisible ? formatCurrency(totalSales) : '*******'}
+      </Text>
       <Text style={styles.salesPeriod}>Últimos 30 dias</Text>
       <View style={{ alignItems: 'center', marginVertical: 8 }}>
         <Grafico width={'100%'} height={220} />
@@ -13,17 +26,23 @@ export default function SalesSummaryCard({ balanceVisible }: { balanceVisible: b
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#2A2AFF' }]} />
           <Text>Vendas</Text>
-          <Text style={styles.legendValue}>{balanceVisible ? 'R$ 7.724,23' : '*******'}</Text>
+          <Text style={styles.legendValue}>
+            {balanceVisible ? formatCurrency(totalSales) : '*******'}
+          </Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#FFA500' }]} />
           <Text>Pendente</Text>
-          <Text style={styles.legendValue}>{balanceVisible ? 'R$ 2.822,91' : '*******'}</Text>
+          <Text style={styles.legendValue}>
+            {balanceVisible ? formatCurrency(pendingSales) : '*******'}
+          </Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#FF0000' }]} />
           <Text>Estorno</Text>
-          <Text style={styles.legendValue}>{balanceVisible ? 'R$ 609,87' : '*******'}</Text>
+          <Text style={styles.legendValue}>
+            {balanceVisible ? formatCurrency(refundedSales) : '*******'}
+          </Text>
         </View>
       </View>
     </View>
@@ -35,7 +54,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 20,
-    // marginHorizontal: 20,
   },
   totalSales: {
     fontSize: 28,

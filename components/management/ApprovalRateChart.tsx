@@ -2,14 +2,24 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import TaxaAprovacaoIcon from '../../images/gestão/taxa de aprovação.svg';
 import { Colors } from '../../constants/Colors';
+import { ManagementData } from '../../services/api';
 
-const data = [
-  { label: 'Pix', percentage: '98%', color: Colors.blue['02'] },
-  { label: 'Cartão', percentage: '96%', color: Colors.violet['01'] },
-  { label: 'Boleto', percentage: '92%', color: Colors.green['01'] },
-];
+interface ApprovalRateChartProps {
+  managementData: ManagementData | null;
+  formatPercentage: (value: number) => string;
+}
 
-export default function ApprovalRateChart() {
+export default function ApprovalRateChart({ managementData, formatPercentage }: ApprovalRateChartProps) {
+  const pixApprovalRate = managementData?.pixApprovalRate || 0;
+  const cardApprovalRate = managementData?.cardApprovalRate || 0;
+  const boletoApprovalRate = managementData?.boletoApprovalRate || 0;
+
+  const data = [
+    { label: 'Pix', percentage: formatPercentage(pixApprovalRate), color: Colors.blue['02'] },
+    { label: 'Cartão', percentage: formatPercentage(cardApprovalRate), color: Colors.violet['01'] },
+    { label: 'Boleto', percentage: formatPercentage(boletoApprovalRate), color: Colors.green['01'] },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>

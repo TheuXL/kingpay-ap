@@ -4,8 +4,19 @@ import VendasPixIcon from '../../images/home/Icon vendas pix.svg';
 import VendasBoletosIcon from '../../images/home/icon vendas boletos.svg';
 import CetaPositivaIcon from '../../images/home/seta metricas de vendas positivos.svg';
 import CetaNegativaIcon from '../../images/home/seta metricas de vendas negativos.svg';
+import { DashboardData } from '../../services/api';
 
-export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: boolean }) {
+interface SalesMetricsCardProps {
+  balanceVisible: boolean;
+  dashboardData: DashboardData | null;
+  formatPercentage: (value: number) => string;
+}
+
+export default function SalesMetricsCard({ balanceVisible, dashboardData, formatPercentage }: SalesMetricsCardProps) {
+  const chargebackRate = dashboardData?.taxaChargeback || 0;
+  const pixConversion = dashboardData?.conversionPix || 0;
+  const boletoConversion = dashboardData?.conversionBoleto || 0;
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Métricas de vendas</Text>
@@ -15,7 +26,9 @@ export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: b
             <ChargebackIcon width={16} height={16} />
             <Text style={styles.cardTitle}>Chargeback</Text>
           </View>
-          <Text style={styles.cardValue}>8.54%</Text>
+          <Text style={styles.cardValue}>
+            {balanceVisible ? formatPercentage(chargebackRate) : '*******'}
+          </Text>
           <View style={styles.percentageContainer}>
             <CetaPositivaIcon width={20} height={20} />
             <Text style={styles.cardPercentageGood}>+7,8%</Text>
@@ -26,7 +39,9 @@ export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: b
             <VendasPixIcon width={16} height={16} />
             <Text style={styles.cardTitle}>Vendas PIX</Text>
           </View>
-          <Text style={styles.cardValue}>75.2%</Text>
+          <Text style={styles.cardValue}>
+            {balanceVisible ? formatPercentage(pixConversion) : '*******'}
+          </Text>
           <View style={styles.percentageContainer}>
             <CetaPositivaIcon width={20} height={20} />
             <Text style={styles.cardPercentageGood}>+15%</Text>
@@ -37,7 +52,9 @@ export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: b
             <VendasBoletosIcon width={16} height={16} />
             <Text style={styles.cardTitle}>Vendas Boletos</Text>
           </View>
-          <Text style={styles.cardValue}>16.26%</Text>
+          <Text style={styles.cardValue}>
+            {balanceVisible ? formatPercentage(boletoConversion) : '*******'}
+          </Text>
           <View style={styles.percentageContainer}>
             <CetaNegativaIcon width={20} height={20} />
             <Text style={styles.cardPercentageBad}>-23,8%</Text>
@@ -50,7 +67,6 @@ export default function SalesMetricsCard({ balanceVisible }: { balanceVisible: b
 
 const styles = StyleSheet.create({
   container: {
-    // marginHorizontal: 20,
     marginTop: 20,
   },
   title: {

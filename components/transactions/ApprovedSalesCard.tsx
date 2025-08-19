@@ -1,14 +1,26 @@
 import { StyleSheet, Text, View } from 'react-native';
 import VendasAprovadasIcon from '../../images/transações/icon vendas aprovadas.svg';
 import { Colors } from '@/constants/Colors';
+import { TransactionMetricsData } from '../../services/api';
 
-export default function ApprovedSalesCard() {
+interface ApprovedSalesCardProps {
+  transactionMetrics: TransactionMetricsData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function ApprovedSalesCard({ transactionMetrics, formatCurrency }: ApprovedSalesCardProps) {
+  const totalApprovedSales = transactionMetrics?.totalApprovedSales || 0;
+  const totalApprovedAmount = transactionMetrics?.totalApprovedAmount || 0;
+  const approvedPixAmount = transactionMetrics?.approvedPixSales ? (transactionMetrics.approvedPixSales * 100) : 0; // Estimativa
+  const approvedCardAmount = transactionMetrics?.approvedCardSales ? (transactionMetrics.approvedCardSales * 100) : 0; // Estimativa
+  const approvedBoletoAmount = transactionMetrics?.approvedBoletoSales ? (transactionMetrics.approvedBoletoSales * 100) : 0; // Estimativa
+
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.infoSection}>
-          <Text style={styles.title}>789 vendas aprovadas</Text>
-          <Text style={styles.value}>R$ 8.236,17</Text>
+          <Text style={styles.title}>{totalApprovedSales} vendas aprovadas</Text>
+          <Text style={styles.value}>{formatCurrency(totalApprovedAmount)}</Text>
           <View style={styles.percentageContainer}>
             <Text style={styles.percentage}>+2,8%</Text>
           </View>
@@ -20,15 +32,15 @@ export default function ApprovedSalesCard() {
       <View style={styles.divider} />
       <View style={styles.item}>
         <Text style={styles.label}>Pix</Text>
-        <Text style={styles.itemValue}>R$ 5.313,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(approvedPixAmount)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Cartão</Text>
-        <Text style={styles.itemValue}>R$ 6.341,97</Text>
+        <Text style={styles.itemValue}>{formatCurrency(approvedCardAmount)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Boleto</Text>
-        <Text style={styles.itemValue}>R$ 956,13</Text>
+        <Text style={styles.itemValue}>{formatCurrency(approvedBoletoAmount)}</Text>
       </View>
     </View>
   );

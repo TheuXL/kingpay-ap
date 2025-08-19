@@ -3,7 +3,13 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SetaSaqueIcon from '../../images/home/seta Solicita saque.svg';
 import { Colors } from '../../constants/Colors';
 
-export default function BalanceCard({ balanceVisible }: { balanceVisible: boolean }) {
+interface BalanceCardProps {
+  balanceVisible: boolean;
+  balance: number;
+  formatCurrency: (value: number) => string;
+}
+
+export default function BalanceCard({ balanceVisible, balance, formatCurrency }: BalanceCardProps) {
   const router = useRouter();
   
   return (
@@ -11,7 +17,9 @@ export default function BalanceCard({ balanceVisible }: { balanceVisible: boolea
       <View style={styles.header}>
         <Text style={styles.headerText}>Saldo disponível</Text>
       </View>
-      <Text style={styles.balanceText}>{balanceVisible ? 'R$ 138.241,45' : '*******'}</Text>
+      <Text style={styles.balanceText}>
+        {balanceVisible ? formatCurrency(balance) : '*******'}
+      </Text>
       <TouchableOpacity style={styles.withdrawButton} onPress={() => router.push('/request-withdraw' as any)}>
         <Text style={styles.withdrawButtonText}>Solicitar Saque</Text>
         <SetaSaqueIcon />
@@ -25,7 +33,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.blue['01'],
     padding: 20,
     borderRadius: 20,
-    // marginHorizontal: 20,
     marginTop: 10,
   },
   header: {

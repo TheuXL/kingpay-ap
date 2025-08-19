@@ -8,20 +8,24 @@ import NotificacoesIcon from '../../images/home/icon notificações.svg';
 import OlaUsuarioIcon from '../../images/home/icon, ola, usuario.svg';
 import { Colors } from '@/constants/Colors';
 
+interface HomeHeaderProps {
+  balanceVisible: boolean;
+  setBalanceVisible: (visible: boolean) => void;
+  userName?: string;
+}
+
 export default function HomeHeader({
   balanceVisible,
   setBalanceVisible,
-}: {
-  balanceVisible: boolean;
-  setBalanceVisible: (visible: boolean) => void;
-}) {
+  userName = 'Usuário',
+}: HomeHeaderProps) {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.userButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.userName}>Olá, Gabriel!</Text>
+        <Text style={styles.userName}>Olá, {userName}!</Text>
         <OlaUsuarioIcon width={16} height={16} />
         <View style={styles.notificationDot}>
           <NotificacoesIcon width={8} height={8} />

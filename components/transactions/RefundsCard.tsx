@@ -1,14 +1,25 @@
 import { StyleSheet, Text, View } from 'react-native';
 import EstornosIcon from '../../images/transações/Icon estornos.svg';
 import { Colors } from '@/constants/Colors';
+import { TransactionMetricsData } from '../../services/api';
 
-export default function RefundsCard() {
+interface RefundsCardProps {
+  transactionMetrics: TransactionMetricsData | null;
+  formatCurrency: (value: number) => string;
+}
+
+export default function RefundsCard({ transactionMetrics, formatCurrency }: RefundsCardProps) {
+  const totalRefunds = transactionMetrics?.totalRefunds || 0;
+  const pixRefunds = transactionMetrics?.pixRefunds || 0;
+  const cardRefunds = transactionMetrics?.cardRefunds || 0;
+  const boletoRefunds = transactionMetrics?.boletoRefunds || 0;
+
   return (
     <View style={styles.card}>
       <View style={styles.topSection}>
         <View style={styles.infoSection}>
           <Text style={styles.title}>Estornos</Text>
-          <Text style={styles.value}>R$ 625,00</Text>
+          <Text style={styles.value}>{formatCurrency(totalRefunds)}</Text>
           <View style={styles.percentageContainer}>
             <Text style={styles.percentage}>+23,8%</Text>
           </View>
@@ -20,15 +31,15 @@ export default function RefundsCard() {
       <View style={styles.divider} />
       <View style={styles.item}>
         <Text style={styles.label}>Pix</Text>
-        <Text style={styles.itemValue}>R$ 250,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(pixRefunds)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Cartão</Text>
-        <Text style={styles.itemValue}>R$ 250,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(cardRefunds)}</Text>
       </View>
       <View style={styles.item}>
         <Text style={styles.label}>Boleto</Text>
-        <Text style={styles.itemValue}>R$ 125,00</Text>
+        <Text style={styles.itemValue}>{formatCurrency(boletoRefunds)}</Text>
       </View>
     </View>
   );

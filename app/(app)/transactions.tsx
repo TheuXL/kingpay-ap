@@ -1,45 +1,58 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { TransactionList } from '@/components/wallet/TransactionList';
-import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text } from 'react-native';
 import TransactionMetrics from '../../components/transactions/TransactionMetrics';
 import FilterIcon from '../../images/transações/Filter Container.svg';
 import BaraDePesquisa from '../../images/link de pagamento/bara de pesquisa.svg';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
+import { useTransactionMetrics } from '../../hooks/useTransactionMetrics';
 
 export default function TransactionsScreen() {
   const router = useRouter();
-  const transactions = [
-    {
-      name: 'Capa Notebook Acer Nitro 5',
-      email: 'gabrielsantos@gmail.com',
-      amount: '+ R$ 245,50',
-      date: 'Hoje',
-      type: 'card_approved' as const,
-    },
-    {
-      name: 'Capa Notebook Acer Nitro 5',
-      email: 'gabrielsantos@gmail.com',
-      amount: '+ R$ 245,50',
-      date: 'Ontem',
-      type: 'pix' as const,
-    },
-    {
-      name: 'Capa Notebook Acer Nitro 5',
-      email: 'gabrielsantos@gmail.com',
-      amount: '+ R$ 245,50',
-      date: '13 de jul',
-      type: 'card_failed' as const,
-    },
-    {
-      name: 'Capa Notebook Acer Nitro 5',
-      email: 'gabrielsantos@gmail.com',
-      amount: '+ R$ 245,50',
-      date: '12 de jul',
-      type: 'pix' as const,
-    },
-  ];
+  const transactions: any[] = []; // Array vazio - sem dados mockados
+  const { transactionMetrics, isLoading, error, refreshData } = useTransactionMetrics();
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value / 100); // API retorna valores em centavos
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Hoje';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Ontem';
+    } else {
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.blue['01']} />
+        <Text style={styles.loadingText}>Carregando dados...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Erro ao carregar dados</Text>
+        <Text style={styles.errorSubtext}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -47,8 +60,11 @@ export default function TransactionsScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
+        }
       >
-        <TransactionMetrics />
+        <TransactionMetrics transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
         <View style={styles.contentPadding}>
           <View style={styles.cardsRow}>
             <ThemedText style={styles.transactionsTitle}>Histórico</ThemedText>
@@ -71,7 +87,11 @@ export default function TransactionsScreen() {
             </TouchableOpacity>
           </View>
 
-          <TransactionList transactions={transactions} />
+          <TransactionList 
+            transactions={transactions} 
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+          />
         </View>
       </ScrollView>
     </View>
@@ -82,6 +102,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white['02'],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['02'],
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: Colors.gray['03'],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['02'],
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.red['01'],
+    marginBottom: 10,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: Colors.gray['03'],
+    textAlign: 'center',
   },
   scrollContainer: {
     flex: 1,

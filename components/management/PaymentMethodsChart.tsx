@@ -2,14 +2,25 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import FormaPagamentoIcon from '../../images/gestão/forma de pagamento.svg';
 import { Colors } from '../../constants/Colors';
+import { ManagementData } from '../../services/api';
 
-const data = [
-  { label: 'Pix', value: 'R$ 17.274,68', color: Colors.blue['02'] },
-  { label: 'Cartão', value: 'R$ 4.935,62', color: Colors.violet['01'] },
-  { label: 'Boleto', value: 'R$ 2.467,81', color: Colors.green['01'] },
-];
+interface PaymentMethodsChartProps {
+  managementData: ManagementData | null;
+  formatCurrency: (value: number) => string;
+}
 
-export default function PaymentMethodsChart() {
+export default function PaymentMethodsChart({ managementData, formatCurrency }: PaymentMethodsChartProps) {
+  const pixSales = managementData?.pixSales || 0;
+  const cardSales = managementData?.cardSales || 0;
+  const boletoSales = managementData?.boletoSales || 0;
+  const totalSales = managementData?.totalSales || 0;
+
+  const data = [
+    { label: 'Pix', value: formatCurrency(pixSales), color: Colors.blue['02'] },
+    { label: 'Cartão', value: formatCurrency(cardSales), color: Colors.violet['01'] },
+    { label: 'Boleto', value: formatCurrency(boletoSales), color: Colors.green['01'] },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -20,7 +31,7 @@ export default function PaymentMethodsChart() {
       <View style={styles.chartContainer}>
         <FormaPagamentoIcon width={200} height={200} />
         <View style={styles.centerContent}>
-          <Text style={styles.centerValue}>R$ 24.678,12</Text>
+          <Text style={styles.centerValue}>{formatCurrency(totalSales)}</Text>
         </View>
       </View>
       

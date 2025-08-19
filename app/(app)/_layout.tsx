@@ -13,6 +13,7 @@ export default function AppLayout() {
           <Stack.Screen name="transactions" options={{ headerShown: false }} />
           <Stack.Screen name="movements" options={{ headerShown: false }} />
           <Stack.Screen name="payment-link" options={{ headerShown: false }} />
+          <Stack.Screen name="create-payment-link" options={{ headerShown: false }} />
           <Stack.Screen name="payment-link-details" options={{ headerShown: false }} />
           <Stack.Screen name="payment-link-success" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />

@@ -1,11 +1,22 @@
 import { ThemedText } from '@/components/ThemedText';
-import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Switch } from 'react-native';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
 import { Colors } from '@/constants/Colors';
+import { useCreatePaymentLink } from '../../hooks/useCreatePaymentLink';
+import { CreatePaymentLinkData } from '../../services/api';
+import { useState } from 'react';
 
 export default function CreatePaymentLinkPersonalizeScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const { createPaymentLink, isLoading, error } = useCreatePaymentLink();
+  
+  const [selectedColor, setSelectedColor] = useState('#FF5733');
+  const [logoUrl, setLogoUrl] = useState('');
+
+  // Receber dados do formulário anterior
+  const linkData: CreatePaymentLinkData = params.linkData ? JSON.parse(params.linkData as string) : null;
 
   const colors = [
     '#ff4d4d',
@@ -24,6 +35,46 @@ export default function CreatePaymentLinkPersonalizeScreen() {
     '#c54dff',
     '#ff4dc5',
   ];
+
+  const handleCreateLink = async () => {
+    if (!linkData) {
+      Alert.alert('Erro', 'Dados do link não encontrados');
+      return;
+    }
+
+    console.log('🎯 === CRIANDO LINK COM PERSONALIZAÇÃO ===');
+    console.log('Cor selecionada:', selectedColor);
+    console.log('Logo URL:', logoUrl);
+
+    // Adicionar dados de personalização
+    const finalLinkData = {
+      ...linkData,
+      cor: selectedColor,
+      image_logo: logoUrl || undefined,
+    };
+
+    console.log('📤 === ENVIANDO DADOS FINAIS PARA API ===');
+    console.log('Dados completos:', JSON.stringify(finalLinkData, null, 2));
+
+    const result = await createPaymentLink(finalLinkData);
+
+    if (result.success && result.data) {
+      console.log('✅ === LINK CRIADO COM SUCESSO ===');
+      // Navegar para a tela de sucesso
+      router.push('/payment-link-success');
+    } else {
+      console.log('❌ === ERRO AO CRIAR LINK ===');
+      Alert.alert('Erro', result.error || 'Erro ao criar link de pagamento');
+    }
+  };
+
+  if (!linkData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Dados do link não encontrados</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -56,9 +107,17 @@ export default function CreatePaymentLinkPersonalizeScreen() {
 
           <View style={styles.colorGrid}>
             {colors.map((color, index) => (
-              <TouchableOpacity key={index} style={[styles.colorSwatch, { backgroundColor: color }]}>
-                {index === 0 && (
-                  <Ionicons name="checkmark" size={24} color="white" />
+              <TouchableOpacity 
+                key={index} 
+                style={[
+                  styles.colorSwatch, 
+                  { backgroundColor: color },
+                  selectedColor === color && styles.selectedColorSwatch
+                ]}
+                onPress={() => setSelectedColor(color)}
+              >
+                {selectedColor === color && (
+                  <Text style={styles.checkmark}>✓</Text>
                 )}
               </TouchableOpacity>
             ))}
@@ -66,12 +125,21 @@ export default function CreatePaymentLinkPersonalizeScreen() {
         </View>
         <View style={styles.footer}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="black" />
             <Text>Anterior</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.nextButton} onPress={() => router.push('/payment-link-success')}>
-            <Text style={styles.nextButtonText}>Criar link</Text>
-            <Ionicons name="checkmark" size={24} color="white" />
+          <TouchableOpacity 
+            style={[styles.nextButton, isLoading && styles.nextButtonDisabled]} 
+            onPress={handleCreateLink}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <Text style={styles.nextButtonText}>Criar link</Text>
+                <Text style={styles.checkmark}>✓</Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -160,6 +228,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  selectedColorSwatch: {
+    borderWidth: 3,
+    borderColor: '#6200EE',
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -185,9 +257,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 30,
   },
+  nextButtonDisabled: {
+    opacity: 0.7,
+  },
   nextButtonText: {
     color: 'white',
     marginRight: 10,
     fontWeight: 'bold',
+  },
+  checkmark: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['01'],
+  },
+  errorText: {
+    fontSize: 18,
+    color: Colors.red['01'],
+    textAlign: 'center',
   },
 });

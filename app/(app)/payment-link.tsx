@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text } from 'react-native';
 import WarningModal from '../../components/ui/WarningModal';
 
 import { Colors } from '@/constants/Colors';
@@ -14,21 +14,46 @@ import IconLinks from '@/images/link de pagamento/Icon links.svg';
 import LinkAtivo from '@/images/link de pagamento/link ativo.svg';
 import InativoIcon from '@/images/link de pagamento/inativo.svg';
 import BackIcon from '@/images/icon_back.svg';
+import CriarNovoLink from '@/images/link de pagamento/Criar novo link.svg';
+import { usePaymentLinks } from '../../hooks/usePaymentLinks';
 
 export default function PaymentLinkScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const { paymentLinks, isLoading, error, refreshData, activeLinks, inactiveLinks } = usePaymentLinks();
 
-  const links = [
-    { name: 'Capa Notebook', price: 'R$ 245,45', active: true },
-    { name: 'Capa Notebook', price: 'R$ 245,50', active: false },
-    { name: 'Capa Notebook', price: 'R$ 245,45', active: true },
-    { name: 'Capa Notebook', price: 'R$ 245,45', active: true },
-  ];
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value / 100); // API retorna valores em centavos
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.blue['01']} />
+        <Text style={styles.loadingText}>Carregando links...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Erro ao carregar dados</Text>
+        <Text style={styles.errorSubtext}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
+        }
+      >
         <ThemedView style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <BackIcon />
@@ -46,14 +71,12 @@ export default function PaymentLinkScreen() {
             Gerencie seus links de pagamento e acompanhe suas vendas
           </ThemedText>
 
-          {/* Botão removido para corrigir erro de navegação */}
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={styles.createLinkButton}
             onPress={() => router.push('/create-payment-link')}
           >
-            <ThemedText style={styles.createLinkButtonText}>Criar novo link</ThemedText>
-            <Ionicons name="add" size={24} color={Colors.white['01']} />
-          </TouchableOpacity> */}
+            <CriarNovoLink width="100%" height="100%" />
+          </TouchableOpacity>
 
           <View style={styles.searchContainer}>
             <View style={styles.searchInputContainer}>
@@ -69,10 +92,13 @@ export default function PaymentLinkScreen() {
             </TouchableOpacity>
           </View>
 
-          {links.map((link, index) => (
-            <TouchableOpacity key={index} style={styles.linkItem} onPress={() => {
-              if (link.active) {
-                router.push('/(app)/payment-link-details');
+          {paymentLinks.map((link, index) => (
+            <TouchableOpacity key={link.id || index} style={styles.linkItem} onPress={() => {
+              if (link.ativo) {
+                router.push({
+                  pathname: '/(app)/payment-link-details',
+                  params: { linkId: link.id }
+                });
               } else {
                 setModalVisible(true);
               }
@@ -81,17 +107,17 @@ export default function PaymentLinkScreen() {
                 <IconLinks />
               </View>
               <View style={styles.linkDetails}>
-                <ThemedText style={styles.linkName}>{link.name}</ThemedText>
-                <ThemedText style={styles.linkPrice}>{link.price}</ThemedText>
+                <ThemedText style={styles.linkName}>{link.nome}</ThemedText>
+                <ThemedText style={styles.linkPrice}>{formatCurrency(link.valor)}</ThemedText>
                 <View style={styles.linkActions}>
-                  {link.active ? (
+                  {link.ativo ? (
                     <LinkAtivo />
                   ) : (
                     <InativoIcon />
                   )}
                   <TouchableOpacity
-                    style={[styles.copyButton, !link.active && styles.disabledCopyButton]}
-                    disabled={!link.active}
+                    style={[styles.copyButton, !link.ativo && styles.disabledCopyButton]}
+                    disabled={!link.ativo}
                   >
                     <CopiarLink />
                   </TouchableOpacity>
@@ -99,6 +125,13 @@ export default function PaymentLinkScreen() {
               </View>
             </TouchableOpacity>
           ))}
+
+          {paymentLinks.length === 0 && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>Nenhum link de pagamento encontrado</Text>
+              <Text style={styles.emptyStateSubtext}>Crie seu primeiro link para começar</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
       <WarningModal visible={modalVisible} onClose={() => setModalVisible(false)} />
@@ -110,6 +143,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white['01'],
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['01'],
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: Colors.gray['03'],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white['01'],
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.red['01'],
+    marginBottom: 10,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: Colors.gray['03'],
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -152,19 +214,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   createLinkButton: {
-    backgroundColor: Colors.blue['02'],
-    borderRadius: 25,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 24,
-  },
-  createLinkButtonText: {
-    color: Colors.white['01'],
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
+    width: '100%',
+    height: 60,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -243,5 +297,21 @@ const styles = StyleSheet.create({
   },
   disabledCopyButton: {
     opacity: 0.5,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 50,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.gray['03'],
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: Colors.gray['02'],
+    textAlign: 'center',
   },
 });
