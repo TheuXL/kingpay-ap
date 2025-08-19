@@ -220,28 +220,88 @@ export interface ApiResponse<T = any> {
 
 export interface PixKey {
   id: string;
-  key: string;
-  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  key_type: string;
+  key_value: string;
   description?: string;
-  v: boolean; // validada
-  creator: string;
-  companyTaxId: string;
-  companyName: string;
-  companyId: string;
-  createdat: string;
-  updatedat: string;
+  status: 'active' | 'inactive';
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreatePixKeyData {
-  key: string;
-  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  key_type: string;
+  key_value: string;
   description?: string;
 }
 
 export interface UpdatePixKeyData {
-  key: string;
-  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  key_type?: string;
+  key_value?: string;
   description?: string;
+  status?: 'active' | 'inactive';
+}
+
+// Tipos para Configurações
+export interface UserData {
+  id: string;
+  fullname: string;
+  email: string;
+  phone: string;
+  document: string;
+  birthdate?: string;
+  company: string;
+  foto?: string | null;
+}
+
+// Função utilitária para extrair o primeiro nome
+export const getFirstName = (fullname: string): string => {
+  if (!fullname) return '';
+  return fullname.split(' ')[0];
+};
+
+export interface CompanyData {
+  id: string;
+  name: string;
+  fantasy_name?: string;
+  taxid: string;
+  website?: string;
+  address: {
+    street: string;
+    number: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    zipcode: string;
+    country: string;
+  };
+}
+
+export interface CompanyRates {
+  pix_fee_percentage: number;
+  pix_fee_fixed: number;
+  card_fee_percentage: number;
+  card_fee_fixed: number;
+  boleto_fee_percentage: number;
+  boleto_fee_fixed: number;
+  withdrawal_fee_percentage: number;
+  withdrawal_fee_fixed: number;
+  fee_type_pix?: string;
+  fee_type_card?: string;
+  fee_type_boleto?: string;
+  fee_type_withdrawal?: string;
+}
+
+export interface TaxSimulationRequest {
+  company_id: string;
+  valor: number;
+  payment_method: 'PIX' | 'CARD' | 'BOLETO';
+  parcelas: number;
+}
+
+export interface TaxSimulationResponse {
+  taxaIntermediacao: string;
+  totalTaxas: string;
+  valorLiquido: string;
 }
 
 // Classe principal da API
@@ -253,8 +313,10 @@ class KingPayAPI {
     try {
       console.log('🔐 === INICIANDO LOGIN ===');
       console.log('📧 Email:', email);
-      console.log('🌐 URL:', `${supabaseUrl}/auth/v1/token?grant_type=password`);
-      console.log('🔑 API Key:', supabaseAnonKey.substring(0, 20) + '...');
+      
+      // LIMPAR TODOS OS TOKENS ANTES DO LOGIN
+      await this.clearTokenCache();
+      console.log('🧹 Tokens anteriores removidos');
       
       const requestBody = {
         email,
@@ -292,15 +354,16 @@ class KingPayAPI {
         console.log('📧 User Email:', data.user.email);
         console.log('🔑 Access Token:', data.access_token.substring(0, 20) + '...');
         
-        // Salvar token no SecureStore
+        // SALVAR APENAS O NOVO TOKEN
         await SecureStore.setItemAsync('access_token', data.access_token);
         await SecureStore.setItemAsync('refresh_token', data.refresh_token);
         await SecureStore.setItemAsync('user_id', data.user.id);
         
+        // Atualizar token em memória
         this.accessToken = data.access_token;
         
-        console.log('💾 Tokens salvos no SecureStore');
-        console.log('🔄 Redirecionando para /home...');
+        console.log('💾 Novo token salvo no SecureStore');
+        console.log('🔄 Token em memória atualizado');
         
         return {
           success: true,
@@ -310,6 +373,9 @@ class KingPayAPI {
         console.log('❌ === ERRO NO LOGIN ===');
         console.log('Erro:', data.error_description || data.error || 'Erro desconhecido');
         
+        // Em caso de erro, garantir que não há tokens
+        await this.clearTokenCache();
+        
         return {
           success: false,
           error: data.error_description || data.error || 'Erro no login',
@@ -318,6 +384,9 @@ class KingPayAPI {
     } catch (error) {
       console.log('💥 === ERRO DE CONEXÃO ===');
       console.error('Erro:', error);
+      
+      // Em caso de erro, garantir que não há tokens
+      await this.clearTokenCache();
       
       return {
         success: false,
@@ -549,7 +618,32 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
-      const url = `${supabaseUrl}/functions/v1/link-pagamentos`;
+      // Obter user ID do token
+      const userId = await SecureStore.getItemAsync('user_id');
+      if (!userId) {
+        console.log('❌ User ID não encontrado');
+        return { success: false, error: 'User ID não encontrado' };
+      }
+
+      // Buscar dados do usuário para obter o company ID
+      const userData = await this.getUserData(userId);
+      if (!userData.success || !userData.data) {
+        console.log('❌ Não foi possível obter dados do usuário');
+        return { success: false, error: 'Não foi possível obter dados do usuário' };
+      }
+
+      // A resposta da API tem estrutura { success: true, user: { company: "..." } }
+      const responseData = userData.data as any;
+      const companyId = responseData.user?.company || responseData.company;
+      if (!companyId) {
+        console.log('❌ Company ID não encontrado');
+        return { success: false, error: 'Company ID não encontrado' };
+      }
+
+      console.log('🏢 Company ID:', companyId);
+
+      // Construir URL com filtro por company
+      const url = `${supabaseUrl}/functions/v1/link-pagamentos?company=${companyId}`;
       
       console.log('📤 === REQUISIÇÃO LINKS ===');
       console.log('Método: GET');
@@ -577,6 +671,14 @@ class KingPayAPI {
         console.log('✅ === LINKS OBTIDOS ===');
         console.log('🔗 Total de links:', data.data?.length || 0);
         console.log('✅ Links ativos:', data.data?.filter((link: PaymentLink) => link.ativo).length || 0);
+        
+        // Log detalhado dos links obtidos
+        if (data.data && data.data.length > 0) {
+          console.log('📋 Links obtidos:');
+          data.data.forEach((link: PaymentLink, index: number) => {
+            console.log(`  ${index + 1}. ${link.nome} (R$ ${link.valor}) - Criado por: ${link.creator} - Company: ${link.company}`);
+          });
+        }
         
         return {
           success: true,
@@ -875,15 +977,10 @@ class KingPayAPI {
     try {
       console.log('🚪 === INICIANDO LOGOUT ===');
       
-      // Remover tokens do SecureStore
-      await SecureStore.deleteItemAsync('access_token');
-      await SecureStore.deleteItemAsync('refresh_token');
-      await SecureStore.deleteItemAsync('user_id');
+      // Usar método de limpeza de cache
+      await this.clearTokenCache();
       
-      this.accessToken = null;
-      
-      console.log('🗑️ Tokens removidos do SecureStore');
-      console.log('🔄 Redirecionando para /login...');
+      console.log('✅ Logout concluído com sucesso');
     } catch (error) {
       console.error('❌ Erro ao fazer logout:', error);
     }
@@ -891,25 +988,148 @@ class KingPayAPI {
 
   // Método para obter token armazenado
   async getStoredToken(): Promise<string | null> {
-    if (this.accessToken) {
-      return this.accessToken;
-    }
-
     try {
+      // Sempre buscar diretamente do SecureStore para garantir token atual
       const token = await SecureStore.getItemAsync('access_token');
-      this.accessToken = token;
-      return token;
+      
+      if (token) {
+        // Atualizar token em memória apenas se encontrado
+        this.accessToken = token;
+        console.log('🔑 Token obtido do SecureStore');
+        return token;
+      } else {
+        // Garantir que não há token em memória se não encontrado
+        this.accessToken = null;
+        console.log('❌ Token não encontrado no SecureStore');
+        return null;
+      }
     } catch (error) {
       console.error('❌ Erro ao obter token:', error);
+      this.accessToken = null;
       return null;
     }
   }
 
   // Método para verificar se o usuário está autenticado
   async isAuthenticated(): Promise<boolean> {
-    const token = await this.getStoredToken();
-    return !!token;
+    try {
+      console.log('🔍 === VERIFICANDO AUTENTICAÇÃO ===');
+      
+      // Primeiro validar e limpar tokens órfãos
+      await this.validateAndCleanTokens();
+      
+      // Buscar token diretamente do SecureStore
+      const token = await SecureStore.getItemAsync('access_token');
+      
+      if (!token) {
+        console.log('❌ Token não encontrado no SecureStore');
+        // Garantir que não há token em memória
+        this.accessToken = null;
+        return false;
+      }
+      
+      // Verificar se o token não está expirado (verificação básica)
+      try {
+        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (tokenData.exp && tokenData.exp < currentTime) {
+          console.log('❌ Token expirado, removendo...');
+          await this.clearTokenCache();
+          return false;
+        }
+        
+        console.log('✅ Token válido encontrado');
+        this.accessToken = token;
+        return true;
+      } catch (parseError) {
+        console.log('❌ Token inválido, removendo...');
+        await this.clearTokenCache();
+        return false;
+      }
+    } catch (error) {
+      console.log('❌ Erro ao verificar autenticação:', error);
+      // Em caso de erro, limpar tokens
+      await this.clearTokenCache();
+      return false;
+    }
   }
+
+  // Método para limpar cache de tokens
+  async clearTokenCache(): Promise<void> {
+    try {
+      console.log('🧹 === LIMPANDO CACHE DE TOKENS ===');
+      
+      // Limpar token em memória PRIMEIRO
+      this.accessToken = null;
+      console.log('🗑️ Token em memória removido');
+      
+      // Remover TODOS os tokens do SecureStore
+      await SecureStore.deleteItemAsync('access_token');
+      await SecureStore.deleteItemAsync('refresh_token');
+      await SecureStore.deleteItemAsync('user_id');
+      
+      console.log('🗑️ Tokens removidos do SecureStore');
+      console.log('✅ Cache de tokens completamente limpo');
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache de tokens:', error);
+      // Mesmo com erro, garantir que token em memória está limpo
+      this.accessToken = null;
+    }
+  }
+
+  // Método para verificar e limpar tokens órfãos
+  async validateAndCleanTokens(): Promise<void> {
+    try {
+      console.log('🔍 === VALIDANDO TOKENS ===');
+      
+      const accessToken = await SecureStore.getItemAsync('access_token');
+      const refreshToken = await SecureStore.getItemAsync('refresh_token');
+      const userId = await SecureStore.getItemAsync('user_id');
+      
+      // Se há token mas não há user_id, limpar tudo
+      if (accessToken && !userId) {
+        console.log('⚠️ Token órfão encontrado (sem user_id), removendo...');
+        await this.clearTokenCache();
+        return;
+      }
+      
+      // Se há user_id mas não há token, limpar tudo
+      if (userId && !accessToken) {
+        console.log('⚠️ User ID órfão encontrado (sem token), removendo...');
+        await this.clearTokenCache();
+        return;
+      }
+      
+      // Se há token, verificar se está válido
+      if (accessToken) {
+        try {
+          const tokenData = JSON.parse(atob(accessToken.split('.')[1]));
+          const currentTime = Math.floor(Date.now() / 1000);
+          
+          if (tokenData.exp && tokenData.exp < currentTime) {
+            console.log('⚠️ Token expirado encontrado, removendo...');
+            await this.clearTokenCache();
+            return;
+          }
+          
+          console.log('✅ Tokens válidos encontrados');
+        } catch (parseError) {
+          console.log('⚠️ Token inválido encontrado, removendo...');
+          await this.clearTokenCache();
+          return;
+        }
+      }
+      
+      console.log('✅ Validação de tokens concluída');
+    } catch (error) {
+      console.error('❌ Erro ao validar tokens:', error);
+      // Em caso de erro, limpar tudo
+      await this.clearTokenCache();
+    }
+  }
+
+
 
   // Métodos para Chaves PIX
   async getPixKeys(): Promise<ApiResponse<PixKey[]>> {
@@ -1069,6 +1289,208 @@ class KingPayAPI {
       console.log('💥 === ERRO INESPERADO EXCLUIR CHAVE PIX ===');
       console.log('Erro:', error);
       return { success: false, error: 'Erro inesperado ao excluir chave PIX' };
+    }
+  }
+
+  // Métodos para Configurações
+  async getUserData(userId: string): Promise<ApiResponse<UserData>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('👤 === BUSCANDO DADOS DO USUÁRIO ===');
+      console.log('📤 === REQUISIÇÃO DADOS DO USUÁRIO ===');
+      console.log('Método: GET');
+      console.log('URL:', `${supabaseUrl}/functions/v1/users/${userId}`);
+      console.log('Headers:', { Authorization: `Bearer ${token}` });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/users/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA DADOS DO USUÁRIO ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao buscar dados do usuário' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO BUSCAR DADOS DO USUÁRIO ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao buscar dados do usuário' };
+    }
+  }
+
+  async updateUserData(userId: string, userData: Partial<UserData>): Promise<ApiResponse<UserData>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('✏️ === ATUALIZANDO DADOS DO USUÁRIO ===');
+      console.log('📤 === REQUISIÇÃO ATUALIZAR USUÁRIO ===');
+      console.log('Método: PATCH');
+      console.log('URL:', `${supabaseUrl}/functions/v1/users/${userId}/edit`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+      console.log('Body:', userData);
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/users/${userId}/edit`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      console.log('📥 === RESPOSTA ATUALIZAR USUÁRIO ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao atualizar dados do usuário' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO ATUALIZAR USUÁRIO ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao atualizar dados do usuário' };
+    }
+  }
+
+  async getCompanyData(): Promise<ApiResponse<CompanyData>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🏢 === BUSCANDO DADOS DA EMPRESA ===');
+      console.log('📤 === REQUISIÇÃO DADOS DA EMPRESA ===');
+      console.log('Método: GET');
+      console.log('URL:', `${supabaseUrl}/functions/v1/config-companie-view`);
+      console.log('Headers:', { Authorization: `Bearer ${token}` });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/config-companie-view`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA DADOS DA EMPRESA ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao buscar dados da empresa' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO BUSCAR DADOS DA EMPRESA ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao buscar dados da empresa' };
+    }
+  }
+
+  async getCompanyRates(companyId: string): Promise<ApiResponse<CompanyRates>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('💰 === BUSCANDO TAXAS DA EMPRESA ===');
+      console.log('📤 === REQUISIÇÃO TAXAS DA EMPRESA ===');
+      console.log('Método: GET');
+      console.log('URL:', `${supabaseUrl}/functions/v1/companies/${companyId}/taxas`);
+      console.log('Headers:', { Authorization: `Bearer ${token}` });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/companies/${companyId}/taxas`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA TAXAS DA EMPRESA ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        // A resposta da API pode vir aninhada em um campo 'taxas'
+        const taxasData = data.taxas || data.data || data;
+        return { success: true, data: taxasData };
+      } else {
+        return { success: false, error: data.error || 'Erro ao buscar taxas da empresa' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO BUSCAR TAXAS DA EMPRESA ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao buscar taxas da empresa' };
+    }
+  }
+
+  async simulateTaxes(simulationData: TaxSimulationRequest): Promise<ApiResponse<TaxSimulationResponse>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🧮 === SIMULANDO TAXAS ===');
+      console.log('📤 === REQUISIÇÃO SIMULAR TAXAS ===');
+      console.log('Método: POST');
+      console.log('URL:', `${supabaseUrl}/functions/v1/taxas`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+      console.log('Body:', simulationData);
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/taxas`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(simulationData),
+      });
+
+      console.log('📥 === RESPOSTA SIMULAR TAXAS ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao simular taxas' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO SIMULAR TAXAS ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao simular taxas' };
     }
   }
 }

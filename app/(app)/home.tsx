@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import BalanceCard from '../../components/home/BalanceCard';
 import ExploreCard from '../../components/home/ExploreCard';
 import HomeHeader from '../../components/home/HomeHeader';
@@ -10,11 +10,17 @@ import SalesSummaryCard from '../../components/home/SalesSummaryCard';
 import { Colors } from '../../constants/Colors';
 import { useHomeData } from '../../hooks/useHomeData';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserData } from '../../hooks/useUserData';
+import { getFirstName } from '../../services/api';
+import PeriodFilterModal from '../../components/home/PeriodFilterModal';
+import SetaFiltroIcon from '../../images/home/seta filtro.svg';
 
 export default function HomeScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const { dashboardData, isLoading, error, refreshData } = useHomeData();
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const { dashboardData, isLoading, error, refreshData, updatePeriod, currentPeriod } = useHomeData();
   const { user } = useAuth();
+  const { userData } = useUserData();
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -27,12 +33,16 @@ export default function HomeScreen() {
     return `${value.toFixed(2)}%`;
   };
 
-  // Extrair nome do usuário do email
+  // Extrair primeiro nome do usuário
   const getUserName = (): string => {
-    if (!user?.email) return 'Usuário';
-    const emailName = user.email.split('@')[0];
-    // Capitalizar primeira letra
-    return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    if (userData?.fullname) {
+      return getFirstName(userData.fullname);
+    }
+    if (user?.email) {
+      const emailName = user.email.split('@')[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+    return 'Usuário';
   };
 
   if (isLoading) {
@@ -75,9 +85,13 @@ export default function HomeScreen() {
           <KingPayJourneyCard balanceVisible={balanceVisible} />
           <View style={styles.salesSummaryHeader}>
             <Text style={styles.salesSummaryTitle}>Resumo de vendas</Text>
-            <View style={styles.dateSelector}>
-              <Text>30 dias</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.dateSelector}
+              onPress={() => setFilterModalVisible(true)}
+            >
+              <Text style={styles.dateSelectorText}>{currentPeriod}</Text>
+              <SetaFiltroIcon width={16} height={16} />
+            </TouchableOpacity>
           </View>
           <SalesSummaryCard 
             balanceVisible={balanceVisible} 
@@ -92,6 +106,13 @@ export default function HomeScreen() {
           <ExploreCard />
         </View>
       </ScrollView>
+      
+      <PeriodFilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelectPeriod={updatePeriod}
+        currentPeriod={currentPeriod}
+      />
     </View>
   );
 }
@@ -152,5 +173,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 1,
     borderColor: Colors.gray['03'],
+    gap: 4,
+  },
+  dateSelectorText: {
+    fontSize: 14,
+    color: Colors.black['01'],
   },
 });

@@ -6,6 +6,8 @@ import ContaAtualIcon from '../../images/home/icon conta atual perfil.svg';
 import MultiHillsIcon from '../../images/home/multihills.svg';
 import VernellTechIcon from '../../images/home/vernell tech.svg';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserData } from '../../hooks/useUserData';
+import { getFirstName } from '../../services/api';
 
 interface AccountSwitcherProps {
   visible: boolean;
@@ -15,19 +17,25 @@ interface AccountSwitcherProps {
 export default function AccountSwitcher({ visible, onClose }: AccountSwitcherProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { userData } = useUserData();
 
-  // Extrair nome do usuário do email
+  // Extrair primeiro nome do usuário
   const getUserName = (): string => {
-    if (!user?.email) return 'Usuário';
-    const emailName = user.email.split('@')[0];
-    // Capitalizar primeira letra
-    return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    if (userData?.fullname) {
+      return getFirstName(userData.fullname);
+    }
+    if (user?.email) {
+      const emailName = user.email.split('@')[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+    return 'Usuário';
   };
 
   const currentAccount = {
     name: getUserName(),
     type: 'Conta empresarial',
-    icon: <ContaAtualIcon width={50} height={50} />,
+    hasPhoto: !!userData?.foto,
+    photoUrl: userData?.foto,
   };
 
   const otherAccounts = [
@@ -50,7 +58,14 @@ export default function AccountSwitcher({ visible, onClose }: AccountSwitcherPro
           </View>
           <Text style={styles.title}>Conta atual</Text>
           <TouchableOpacity style={styles.currentAccount}>
-            {currentAccount.icon}
+            {currentAccount.hasPhoto ? (
+              <Image 
+                source={{ uri: currentAccount.photoUrl! }} 
+                style={styles.userPhoto}
+              />
+            ) : (
+              <ContaAtualIcon width={50} height={50} />
+            )}
             <View>
               <Text style={styles.accountName}>{currentAccount.name}</Text>
               <Text style={styles.accountType}>{currentAccount.type}</Text>
@@ -161,5 +176,10 @@ const styles = StyleSheet.create({
   otherAccountType: {
     fontSize: 14,
     color: 'gray',
+  },
+  userPhoto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 });

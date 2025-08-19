@@ -32,23 +32,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const token = await SecureStore.getItemAsync('access_token');
-      const userId = await SecureStore.getItemAsync('user_id');
+      console.log('🔍 === VERIFICANDO STATUS DE AUTENTICAÇÃO ===');
       
-      if (token && userId) {
-        // Token encontrado, considerar autenticado
-        setIsAuthenticated(true);
-        setUser({
-          id: userId,
-          email: 'user@example.com', // Placeholder
-          user_metadata: {}
-        });
+      // Verificar se está autenticado usando a API (que já verifica expiração)
+      const isAuth = await api.isAuthenticated();
+      
+      if (isAuth) {
+        // Buscar dados do usuário atual
+        const userId = await SecureStore.getItemAsync('user_id');
+        
+        if (userId) {
+          console.log('✅ Usuário autenticado encontrado');
+          console.log('👤 User ID:', userId);
+          
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: 'user@example.com', // Será atualizado quando necessário
+            user_metadata: {}
+          });
+        } else {
+          console.log('❌ User ID não encontrado');
+          setIsAuthenticated(false);
+          setUser(null);
+        }
       } else {
+        console.log('❌ Usuário não autenticado');
         setIsAuthenticated(false);
         setUser(null);
       }
     } catch (error) {
-      console.error('Erro ao verificar status de autenticação:', error);
+      console.error('❌ Erro ao verificar status de autenticação:', error);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -58,33 +72,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('🔐 === INICIANDO LOGIN NO CONTEXT ===');
+      console.log('📧 Email:', email);
+      
       const response = await api.login(email, password);
       
       if (response.success && response.data) {
+        console.log('✅ === LOGIN BEM-SUCEDIDO NO CONTEXT ===');
+        console.log('👤 User ID:', response.data.user.id);
+        console.log('📧 User Email:', response.data.user.email);
+        
         setIsAuthenticated(true);
         setUser(response.data.user);
         return true;
       } else {
+        console.log('❌ === LOGIN FALHOU NO CONTEXT ===');
+        console.log('Erro:', response.error);
         return false;
       }
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('❌ Erro no login:', error);
       return false;
     }
   };
 
   const logout = async () => {
     try {
+      console.log('🚪 === INICIANDO LOGOUT NO CONTEXT ===');
+      
       await api.logout();
+      
+      console.log('✅ === LOGOUT CONCLUÍDO NO CONTEXT ===');
       setIsAuthenticated(false);
       setUser(null);
     } catch (error) {
-      console.error('Erro no logout:', error);
+      console.error('❌ Erro no logout:', error);
     }
   };
 
   useEffect(() => {
-    checkAuthStatus();
+    const initializeAuth = async () => {
+      try {
+        console.log('🚀 === INICIALIZANDO AUTENTICAÇÃO ===');
+        
+        // Forçar limpeza de tokens órfãos no início
+        await api.clearTokenCache();
+        
+        // Verificar status de autenticação
+        await checkAuthStatus();
+      } catch (error) {
+        console.error('❌ Erro na inicialização da autenticação:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    initializeAuth();
   }, []);
 
   const value: AuthContextType = {

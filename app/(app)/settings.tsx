@@ -2,9 +2,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Image } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserData } from '@/hooks/useUserData';
+import { getFirstName } from '@/services/api';
 
 import ProfileImage from '@/images/configurações/Profile Image Container.svg';
 import EditIcon from '@/images/configurações/edit.svg';
@@ -17,6 +19,7 @@ import BackIcon from '@/images/icon_back.svg';
 export default function SettingsScreen() {
   const router = useRouter();
   const { logout, user } = useAuth();
+  const { userData } = useUserData();
 
   const handleLogout = () => {
     Alert.alert(
@@ -63,6 +66,32 @@ export default function SettingsScreen() {
     },
   ];
 
+  const getUserDisplayName = () => {
+    if (userData?.fullname) {
+      return getFirstName(userData.fullname);
+    }
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    if (user?.email) {
+      return user.email;
+    }
+    return 'Usuário';
+  };
+
+  // Verificar se o usuário tem foto
+  const hasUserPhoto = !!userData?.foto;
+
+  const getUserDisplayId = () => {
+    if (userData?.id) {
+      return userData.id;
+    }
+    if (user?.id) {
+      return user.id;
+    }
+    return 'ID não disponível';
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -77,12 +106,19 @@ export default function SettingsScreen() {
 
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
-            <ProfileImage />
+            {hasUserPhoto ? (
+              <Image 
+                source={{ uri: userData?.foto! }} 
+                style={styles.userPhoto}
+              />
+            ) : (
+              <ProfileImage />
+            )}
           </View>
           <Text style={styles.profileName}>
-            {user?.user_metadata?.full_name || user?.email || 'Usuário'}
+            {getUserDisplayName()}
           </Text>
-          <Text style={styles.profileId}>ID: {user?.id || 'N/A'}</Text>
+          <Text style={styles.profileId}>ID: {getUserDisplayId()}</Text>
         </View>
 
         <View style={styles.infoSection}>
@@ -138,13 +174,19 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 15,
   },
+  userPhoto: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
   profileName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: Colors.black['01'],
   },
   profileId: {
     fontSize: 14,
-    color: 'gray',
+    color: Colors.gray['01'],
     marginTop: 4,
   },
   infoSection: {
@@ -161,8 +203,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // backgroundColor: Colors.white['01'],
-    // borderRadius: 12,
     paddingVertical: 16,
     marginBottom: 12,
   },
