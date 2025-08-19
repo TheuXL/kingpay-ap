@@ -20,6 +20,7 @@ import { usePaymentLinks } from '../../hooks/usePaymentLinks';
 export default function PaymentLinkScreen() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { paymentLinks, isLoading, error, refreshData, activeLinks, inactiveLinks } = usePaymentLinks();
 
   const formatCurrency = (value: number): string => {
@@ -27,6 +28,12 @@ export default function PaymentLinkScreen() {
       style: 'currency',
       currency: 'BRL',
     }).format(value / 100); // API retorna valores em centavos
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshData();
+    setIsRefreshing(false);
   };
 
   if (isLoading) {
@@ -51,7 +58,7 @@ export default function PaymentLinkScreen() {
     <View style={styles.container}>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
         <ThemedView style={styles.header}>

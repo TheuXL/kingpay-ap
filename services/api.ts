@@ -218,6 +218,32 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
+export interface PixKey {
+  id: string;
+  key: string;
+  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  description?: string;
+  v: boolean; // validada
+  creator: string;
+  companyTaxId: string;
+  companyName: string;
+  companyId: string;
+  createdat: string;
+  updatedat: string;
+}
+
+export interface CreatePixKeyData {
+  key: string;
+  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  description?: string;
+}
+
+export interface UpdatePixKeyData {
+  key: string;
+  type: 'EMAIL' | 'PHONE' | 'CPF' | 'CNPJ' | 'RANDOM';
+  description?: string;
+}
+
 // Classe principal da API
 class KingPayAPI {
   private accessToken: string | null = null;
@@ -883,6 +909,167 @@ class KingPayAPI {
   async isAuthenticated(): Promise<boolean> {
     const token = await this.getStoredToken();
     return !!token;
+  }
+
+  // Métodos para Chaves PIX
+  async getPixKeys(): Promise<ApiResponse<PixKey[]>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🔑 === BUSCANDO CHAVES PIX ===');
+      console.log('📤 === REQUISIÇÃO CHAVES PIX ===');
+      console.log('Método: GET');
+      console.log('URL:', `${supabaseUrl}/functions/v1/pix-key`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/pix-key`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA CHAVES PIX ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || [] };
+      } else {
+        return { success: false, error: data.error || 'Erro ao buscar chaves PIX' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO CHAVES PIX ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao buscar chaves PIX' };
+    }
+  }
+
+  async createPixKey(pixKeyData: CreatePixKeyData): Promise<ApiResponse<PixKey>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🔑 === CRIANDO CHAVE PIX ===');
+      console.log('📤 === REQUISIÇÃO CRIAR CHAVE PIX ===');
+      console.log('Método: POST');
+      console.log('URL:', `${supabaseUrl}/functions/v1/pix-key`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+      console.log('Body:', pixKeyData);
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/pix-key`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pixKeyData),
+      });
+
+      console.log('📥 === RESPOSTA CRIAR CHAVE PIX ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao criar chave PIX' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO CRIAR CHAVE PIX ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao criar chave PIX' };
+    }
+  }
+
+  async updatePixKey(id: string, pixKeyData: UpdatePixKeyData): Promise<ApiResponse<PixKey>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🔑 === ATUALIZANDO CHAVE PIX ===');
+      console.log('📤 === REQUISIÇÃO ATUALIZAR CHAVE PIX ===');
+      console.log('Método: PUT');
+      console.log('URL:', `${supabaseUrl}/functions/v1/pix-key/${id}`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+      console.log('Body:', pixKeyData);
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/pix-key/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pixKeyData),
+      });
+
+      console.log('📥 === RESPOSTA ATUALIZAR CHAVE PIX ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao atualizar chave PIX' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO ATUALIZAR CHAVE PIX ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao atualizar chave PIX' };
+    }
+  }
+
+  async deletePixKey(id: string): Promise<ApiResponse<boolean>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🔑 === EXCLUINDO CHAVE PIX ===');
+      console.log('📤 === REQUISIÇÃO EXCLUIR CHAVE PIX ===');
+      console.log('Método: DELETE');
+      console.log('URL:', `${supabaseUrl}/functions/v1/pix-key/${id}`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/pix-key/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA EXCLUIR CHAVE PIX ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: true };
+      } else {
+        return { success: false, error: data.error || 'Erro ao excluir chave PIX' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO EXCLUIR CHAVE PIX ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao excluir chave PIX' };
+    }
   }
 }
 

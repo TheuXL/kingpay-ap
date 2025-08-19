@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { api, PaymentLink } from '../services/api';
 
 export interface PaymentLinksHook {
@@ -14,15 +14,8 @@ export const usePaymentLinks = () => {
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchPaymentLinks = useCallback(async () => {
-    // Evitar múltiplas chamadas simultâneas
-    if (isLoading || isRefreshing) {
-      console.log('🔄 === PULANDO CHAMADA - JÁ EM ANDAMENTO ===');
-      return;
-    }
-
+  const fetchPaymentLinks = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -47,16 +40,9 @@ export const usePaymentLinks = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, isRefreshing]);
+  };
 
-  const refreshData = useCallback(async () => {
-    // Evitar múltiplas chamadas simultâneas
-    if (isLoading || isRefreshing) {
-      console.log('🔄 === PULANDO REFRESH - JÁ EM ANDAMENTO ===');
-      return;
-    }
-
-    setIsRefreshing(true);
+  const refreshData = async () => {
     setError(null);
 
     try {
@@ -77,10 +63,8 @@ export const usePaymentLinks = () => {
       console.log('💥 === ERRO INESPERADO NO REFRESH ===');
       const errorMessage = err instanceof Error ? err.message : 'Erro inesperado';
       setError(errorMessage);
-    } finally {
-      setIsRefreshing(false);
     }
-  }, [isLoading, isRefreshing]);
+  };
 
   const updateLinkInList = (linkId: string, updatedData: Partial<PaymentLink>) => {
     setPaymentLinks(prevLinks => 
@@ -90,9 +74,10 @@ export const usePaymentLinks = () => {
     );
   };
 
+  // Carregar dados apenas uma vez na inicialização
   useEffect(() => {
     fetchPaymentLinks();
-  }, [fetchPaymentLinks]);
+  }, []); // Array vazio - executa apenas uma vez
 
   const activeLinks = paymentLinks.filter(link => link.ativo);
   const inactiveLinks = paymentLinks.filter(link => !link.ativo);
@@ -101,7 +86,7 @@ export const usePaymentLinks = () => {
     paymentLinks,
     activeLinks,
     inactiveLinks,
-    isLoading: isLoading || isRefreshing,
+    isLoading,
     error,
     refreshData,
     updateLinkInList,
