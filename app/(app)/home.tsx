@@ -18,7 +18,7 @@ import SetaFiltroIcon from '../../images/home/seta filtro.svg';
 export default function HomeScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const { dashboardData, isLoading, error, refreshData, updatePeriod, currentPeriod } = useHomeData();
+  const { dashboardData, walletData, isLoading, error, refreshData, updatePeriod, currentPeriod } = useHomeData();
   const { user } = useAuth();
   const { userData } = useUserData();
 
@@ -78,7 +78,7 @@ export default function HomeScreen() {
         <View style={styles.contentContainer}>
           <BalanceCard 
             balanceVisible={balanceVisible} 
-            balance={dashboardData?.sumValorLiquido || 0}
+            balance={(walletData?.saldoPix || 0) + (walletData?.saldoCartao || 0)}
             formatCurrency={formatCurrency}
           />
           <QuickActions />

@@ -27,15 +27,15 @@ export default function RequestWithdrawScreen() {
   const handleAccountSelect = (subconta: any) => {
     console.log('🏦 === CONTA SELECIONADA ===');
     console.log('ID:', subconta.id);
-    console.log('Nome:', subconta.nome);
-    console.log('Banco:', subconta.banco);
+    console.log('Nome:', subconta.name);
+    console.log('Tipo:', subconta.type);
     
     router.push({
       pathname: '/(app)/withdraw-amount',
       params: {
         accountId: subconta.id,
-        accountName: subconta.nome,
-        accountBank: subconta.banco,
+        accountName: subconta.name,
+        accountBank: subconta.type,
         accountType: 'subconta'
       }
     });
@@ -47,17 +47,31 @@ export default function RequestWithdrawScreen() {
       return;
     }
 
-    console.log('🔑 === CHAVE PIX MANUAL ===');
-    console.log('Chave:', selectedPixKey);
+    // Validar formato da chave PIX
+    const pixKey = selectedPixKey.trim();
     
-    // Aqui você pode implementar a validação da chave PIX
-    // Por enquanto, vamos simular uma chave válida
+    // Validações básicas de chave PIX
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pixKey);
+    const isValidCPF = /^\d{11}$/.test(pixKey);
+    const isValidCNPJ = /^\d{14}$/.test(pixKey);
+    const isValidPhone = /^\d{10,11}$/.test(pixKey);
+    const isValidRandomKey = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pixKey);
+
+    if (!isValidEmail && !isValidCPF && !isValidCNPJ && !isValidPhone && !isValidRandomKey) {
+      Alert.alert('Erro', 'Por favor, digite uma chave PIX válida (CPF, CNPJ, email, telefone ou chave aleatória)');
+      return;
+    }
+
+    console.log('🔑 === CHAVE PIX VALIDADA ===');
+    console.log('Chave:', pixKey);
+    console.log('Tipo:', isValidEmail ? 'EMAIL' : isValidCPF ? 'CPF' : isValidCNPJ ? 'CNPJ' : isValidPhone ? 'PHONE' : 'RANDOM');
+    
     router.push({
       pathname: '/(app)/withdraw-amount',
       params: {
         pixKeyId: 'manual',
-        pixKeyValue: selectedPixKey,
-        pixKeyType: 'MANUAL'
+        pixKeyValue: pixKey,
+        pixKeyType: isValidEmail ? 'EMAIL' : isValidCPF ? 'CPF' : isValidCNPJ ? 'CNPJ' : isValidPhone ? 'PHONE' : 'RANDOM'
       }
     });
   };
@@ -104,13 +118,13 @@ export default function RequestWithdrawScreen() {
           >
             <View style={styles.accountIcon}>
               <Text style={styles.accountIconText}>
-                {getInitials(subconta.nome)}
+                {getInitials(subconta.name)}
               </Text>
             </View>
             <View style={styles.accountInfo}>
-              <Text style={styles.accountName}>{subconta.nome}</Text>
+              <Text style={styles.accountName}>{subconta.name}</Text>
               <Text style={styles.accountBank}>
-                {subconta.banco} - {subconta.agencia}/{subconta.conta}
+                {subconta.type}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={100} color="#64748B" />

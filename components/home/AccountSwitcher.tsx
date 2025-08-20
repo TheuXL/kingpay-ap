@@ -3,10 +3,9 @@ import { useRouter } from 'expo-router';
 import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import NotificationsIcon from '../../images/home/Notifications Icon.svg';
 import ContaAtualIcon from '../../images/home/icon conta atual perfil.svg';
-import MultiHillsIcon from '../../images/home/multihills.svg';
-import VernellTechIcon from '../../images/home/vernell tech.svg';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
+import { useSubcontas } from '../../hooks/useSubcontas';
 import { getFirstName } from '../../services/api';
 
 interface AccountSwitcherProps {
@@ -18,6 +17,7 @@ export default function AccountSwitcher({ visible, onClose }: AccountSwitcherPro
   const router = useRouter();
   const { user } = useAuth();
   const { userData } = useUserData();
+  const { subcontas, isLoading: subcontasLoading } = useSubcontas();
 
   // Extrair primeiro nome do usuário
   const getUserName = (): string => {
@@ -38,11 +38,12 @@ export default function AccountSwitcher({ visible, onClose }: AccountSwitcherPro
     photoUrl: userData?.foto,
   };
 
-  const otherAccounts = [
-    { name: 'Smart Tech', type: 'Conta empresarial', icon: <ContaAtualIcon width={50} height={50} /> },
-    { name: 'Vernell Tech', type: 'Conta empresarial', icon: <VernellTechIcon width={50} height={50} /> },
-    { name: 'MultiHills', type: 'Conta empresarial', icon: <MultiHillsIcon width={50} height={50} /> },
-  ];
+  // Usar dados reais das subcontas
+  const otherAccounts = subcontas.map((subconta) => ({
+    name: subconta.name,
+    type: subconta.type,
+    icon: <ContaAtualIcon width={50} height={50} />, // Usar ícone padrão para todas as subcontas
+  }));
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -74,16 +75,26 @@ export default function AccountSwitcher({ visible, onClose }: AccountSwitcherPro
           </TouchableOpacity>
 
           <Text style={styles.title}>Outras contas</Text>
-          {otherAccounts.map((account, index) => (
-            <TouchableOpacity key={index} style={styles.otherAccount}>
-              {account.icon}
-              <View>
-                <Text style={styles.otherAccountName}>{account.name}</Text>
-                <Text style={styles.otherAccountType}>{account.type}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="blue" />
-            </TouchableOpacity>
-          ))}
+          {subcontasLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Carregando contas...</Text>
+            </View>
+          ) : otherAccounts.length > 0 ? (
+            otherAccounts.map((account, index) => (
+              <TouchableOpacity key={index} style={styles.otherAccount}>
+                {account.icon}
+                <View>
+                  <Text style={styles.otherAccountName}>{account.name}</Text>
+                  <Text style={styles.otherAccountType}>{account.type}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="blue" />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Nenhuma conta vinculada encontrada</Text>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -181,5 +192,23 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: 'gray',
   },
 });

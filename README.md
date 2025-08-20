@@ -51,3 +51,5 @@ Join our community of developers creating universal apps.
 
 
 ajustar a busca C:\Projetos\kingpay (1)\kingpay\app\(app)\transactions.tsx
+
+eas build --platform android

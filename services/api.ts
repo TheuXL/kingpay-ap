@@ -129,6 +129,70 @@ export interface WalletTransaction {
   description?: string;
 }
 
+// Novas interfaces para movimentações da carteira
+export interface ExtratoItem {
+  id: string;
+  created_at: string;
+  tipo: string;
+  value: number;
+  entrada: boolean;
+  wallet: string;
+  user_id: string;
+  creator: string | null;
+  idtransaction: string | null;
+  idsaldoremovido: string | null;
+  idantecipacao: string | null;
+}
+
+export interface AntecipacaoItem {
+  id: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'paid' | 'cancelled';
+  aReceberList: string[];
+  recusaMotivo: string | null;
+  valorPedido: number;
+  valorFinal: number;
+  approved_date: string | null;
+  user_id: string;
+  user_fullname: string;
+  user_phone: string;
+  user_email: string;
+  company_id: string;
+  company_name: string;
+  company_status: string;
+  company_taxid: string;
+}
+
+export interface TransferenciaItem {
+  id: string;
+  createdat: string;
+  updatedat: string;
+  fee: number;
+  requestedamount: number;
+  pixkeyid: string;
+  status: string;
+  amounttotransfer: number;
+  companyid: string;
+  description: string;
+  creator: string;
+  idBaas: string | null;
+  reason_for_denial: string | null;
+  isPix: boolean;
+  pago_em: string | null;
+  user_id: string;
+  user_fullname: string;
+  user_phone: string;
+  user_email: string;
+  company_id: string;
+  company_name: string;
+  company_status: string;
+  company_taxid: string;
+  pix_key_id: string;
+  pix_key: string;
+  pix_key_type: string;
+  pix_key_description: string;
+}
+
 export interface ManagementData {
   // Dados de formas de pagamento
   pixSales: number;
@@ -320,6 +384,16 @@ export interface Subconta {
   empresa: string;
   ativo: boolean;
   created_at: string;
+}
+
+// Tipos para Notificações
+export interface AlertNotification {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  isRead: boolean;
+  type?: string;
 }
 
 // Tipos para Saques
@@ -544,23 +618,45 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
-      // Usar dados do dashboard para a carteira
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      // Obter user ID do token
+      const userId = await SecureStore.getItemAsync('user_id');
+      if (!userId) {
+        console.log('❌ User ID não encontrado');
+        return { success: false, error: 'User ID não encontrado' };
+      }
 
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
-
-      const dashboardResponse = await this.getDashboardData(startDateStr, endDateStr);
+      // Usar endpoint específico da carteira (sem período)
+      const url = `${supabaseUrl}/functions/v1/wallet?userId=${userId}`;
       
-      if (dashboardResponse.success && dashboardResponse.data) {
-        // Mapear dados do dashboard para a carteira (sem dados mockados)
+      console.log('📤 === REQUISIÇÃO CARTEIRA ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      
+      console.log('📥 === RESPOSTA CARTEIRA ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data) {
+        // Mapear dados da carteira (sem período)
         const walletData: WalletData = {
-          saldoPix: dashboardResponse.data.sumPixPaid || 0,
-          saldoCartao: dashboardResponse.data.sumCardPaid || 0,
-          valorReceber: dashboardResponse.data.sumPending || 0,
-          reservaFinanceira: dashboardResponse.data.sumValorLiquido || 0,
+          saldoPix: data.balance || 0,
+          saldoCartao: data.balance_card || 0,
+          valorReceber: data.a_receber || 0,
+          reservaFinanceira: data.reserva || 0,
           movimentacoes: [], // Array vazio - sem dados mockados
         };
 
@@ -576,13 +672,421 @@ class KingPayAPI {
           data: walletData,
         };
       } else {
+        console.log('❌ === ERRO AO BUSCAR DADOS DA CARTEIRA ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
         return {
           success: false,
-          error: dashboardResponse.error || 'Erro ao buscar dados da carteira',
+          error: data.error || 'Erro ao buscar dados da carteira',
         };
       }
     } catch (error) {
       console.log('💥 === ERRO DE CONEXÃO CARTEIRA ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar subcontas
+  async getSubcontas(): Promise<ApiResponse<Subconta[]>> {
+    try {
+      console.log('🏢 === BUSCANDO SUBCONTAS ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/subconta`;
+      
+      console.log('📤 === REQUISIÇÃO SUBCONTAS ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      
+      console.log('📥 === RESPOSTA SUBCONTAS ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data) {
+        // Mapear dados das subcontas
+        const subcontas: Subconta[] = Array.isArray(data) ? data.map((item: any) => ({
+          id: item.id || item.sub_account_id || '',
+          nome: item.name || item.subconta_nome || item.nome || '',
+          banco: item.banco || '',
+          agencia: item.agencia || '',
+          conta: item.conta || '',
+          tipo_conta: item.tipo_conta || 'Corrente',
+          status: item.status || 'active',
+          empresa: item.empresa || '',
+          ativo: item.ativo !== false,
+          created_at: item.created_at || new Date().toISOString(),
+        })) : [];
+
+        console.log('✅ === SUBCONTAS OBTIDAS ===');
+        console.log('🏢 Total de subcontas:', subcontas.length);
+        
+        return {
+          success: true,
+          data: subcontas,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR SUBCONTAS ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar subcontas',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO SUBCONTAS ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar notificações
+  async getNotifications(limit: number = 10, offset: number = 0): Promise<ApiResponse<AlertNotification[]>> {
+    try {
+      console.log('🔔 === BUSCANDO NOTIFICAÇÕES ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/alerts?limit=${limit}&offset=${offset}`;
+      
+      console.log('📤 === REQUISIÇÃO NOTIFICAÇÕES ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      
+      console.log('📥 === RESPOSTA NOTIFICAÇÕES ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data) {
+        // Extrair array de alertas da resposta
+        const alertsArray = data.alerts || data;
+        
+        // Mapear dados das notificações
+        const notifications: AlertNotification[] = Array.isArray(alertsArray) ? alertsArray.map((item: any) => ({
+          id: item.id || '',
+          title: item.title || item.titulo || 'Notificação',
+          description: item.body || item.description || item.descricao || item.message || '',
+          date: item.created_at || item.date || new Date().toISOString(),
+          isRead: item.visualizado || item.is_read || item.viewed || false,
+          type: item.type || 'info',
+        })) : [];
+
+        console.log('✅ === NOTIFICAÇÕES OBTIDAS ===');
+        console.log('📋 Estrutura da resposta:', Object.keys(data));
+        console.log('🔔 Array de alertas:', alertsArray ? alertsArray.length : 'não encontrado');
+        console.log('🔔 Total de notificações mapeadas:', notifications.length);
+        console.log('📝 Exemplo de notificação:', notifications[0]);
+        
+        return {
+          success: true,
+          data: notifications,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR NOTIFICAÇÕES ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar notificações',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO NOTIFICAÇÕES ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para marcar notificação como lida
+  async markNotificationAsRead(notificationId: string): Promise<ApiResponse<boolean>> {
+    try {
+      console.log('✅ === MARCANDO NOTIFICAÇÃO COMO LIDA ===');
+      console.log('🔔 Notification ID:', notificationId);
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/alerts/mark-viewed`;
+      
+      console.log('📤 === REQUISIÇÃO MARCAR COMO LIDA ===');
+      console.log('Método: POST');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      console.log('Body:', { notificationId });
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ notificationId }),
+      });
+
+      const data = await response.json();
+      
+      console.log('📥 === RESPOSTA MARCAR COMO LIDA ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok) {
+        console.log('✅ === NOTIFICAÇÃO MARCADA COMO LIDA ===');
+        
+        return {
+          success: true,
+          data: true,
+        };
+      } else {
+        console.log('❌ === ERRO AO MARCAR NOTIFICAÇÃO ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao marcar notificação como lida',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO MARCAR NOTIFICAÇÃO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar extrato
+  async getExtrato(limit: number = 10, offset: number = 0): Promise<ApiResponse<ExtratoItem[]>> {
+    try {
+      console.log('📋 === BUSCANDO EXTRATO ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      const userId = await SecureStore.getItemAsync('user_id');
+      if (!userId) {
+        console.log('❌ User ID não encontrado');
+        return { success: false, error: 'User ID não encontrado' };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/extrato/${userId}?limit=${limit}&offset=${offset}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.extrato) {
+        console.log('✅ === EXTRATO OBTIDO ===');
+        console.log('📋 Total de itens:', data.extrato.length);
+        return {
+          success: true,
+          data: data.extrato,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR EXTRATO ===');
+        console.log('Status:', response.status);
+        console.log('Erro:', data);
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar extrato',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO EXTRATO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar antecipações
+  async getAntecipacoes(limit: number = 10, offset: number = 0, status?: string): Promise<ApiResponse<AntecipacaoItem[]>> {
+    try {
+      console.log('💰 === BUSCANDO ANTECIPAÇÕES ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      let url = `${supabaseUrl}/functions/v1/antecipacoes/anticipations?limit=${limit}&offset=${offset}`;
+      if (status) {
+        url += `&status=${status}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('✅ === ANTECIPAÇÕES OBTIDAS ===');
+        let anticipations;
+        
+        if (data.data && data.data.data) {
+          anticipations = data.data.data;
+        } else if (data.data) {
+          anticipations = data.data;
+        } else {
+          anticipations = [];
+        }
+        
+        console.log('💰 Total de antecipações:', anticipations.length);
+        return {
+          success: true,
+          data: anticipations,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR ANTECIPAÇÕES ===');
+        console.log('Status:', response.status);
+        console.log('Erro:', data);
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar antecipações',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO ANTECIPAÇÕES ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar transferências (saques)
+  async getTransferencias(limit: number = 10, offset: number = 0, status?: string): Promise<ApiResponse<TransferenciaItem[]>> {
+    try {
+      console.log('🔄 === BUSCANDO TRANSFERÊNCIAS ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      let url = `${supabaseUrl}/functions/v1/saques?limit=${limit}&offset=${offset}`;
+      if (status) {
+        url += `&status=${status}`;
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('✅ === TRANSFERÊNCIAS OBTIDAS ===');
+        let withdrawals;
+        
+        if (data.data && data.data.withdrawals) {
+          withdrawals = data.data.withdrawals;
+        } else if (data.data) {
+          withdrawals = data.data;
+        } else if (data.withdrawals) {
+          withdrawals = data.withdrawals;
+        } else {
+          withdrawals = [];
+        }
+        
+        console.log('🔄 Total de transferências:', withdrawals.length);
+        return {
+          success: true,
+          data: withdrawals,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR TRANSFERÊNCIAS ===');
+        console.log('Status:', response.status);
+        console.log('Erro:', data);
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar transferências',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO TRANSFERÊNCIAS ===');
       console.error('Erro:', error);
       
       return {
@@ -1460,45 +1964,7 @@ class KingPayAPI {
     }
   }
 
-  // Métodos para Subcontas
-  async getSubcontas(): Promise<ApiResponse<Subconta[]>> {
-    try {
-      const token = await this.getStoredToken();
-      if (!token) {
-        return { success: false, error: 'Token não encontrado' };
-      }
 
-      console.log('🏦 === BUSCANDO SUBCONTAS ===');
-      console.log('📤 === REQUISIÇÃO SUBCONTAS ===');
-      console.log('Método: GET');
-      console.log('URL:', `${supabaseUrl}/functions/v1/subconta`);
-      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/subconta`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('📥 === RESPOSTA SUBCONTAS ===');
-      console.log('Status:', response.status);
-
-      const data = await response.json();
-      console.log('Data:', data);
-
-      if (response.ok) {
-        return { success: true, data: data.data || [] };
-      } else {
-        return { success: false, error: data.error || 'Erro ao buscar subcontas' };
-      }
-    } catch (error) {
-      console.log('💥 === ERRO INESPERADO SUBCONTAS ===');
-      console.log('Erro:', error);
-      return { success: false, error: 'Erro inesperado ao buscar subcontas' };
-    }
-  }
 
   // Métodos para Saques
   async createWithdrawal(withdrawalData: CreateWithdrawalData): Promise<ApiResponse<Withdrawal>> {

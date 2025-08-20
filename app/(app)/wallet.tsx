@@ -1,18 +1,52 @@
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import BalanceCards from '../../components/wallet/BalanceCards';
 import TransactionFilter from '../../components/wallet/TransactionFilter';
-import { TransactionList } from '../../components/wallet/TransactionList';
+
+import { ExtratoList } from '../../components/wallet/ExtratoList';
+import { AntecipacoesList } from '../../components/wallet/AntecipacoesList';
+import { TransferenciasList } from '../../components/wallet/TransferenciasList';
 import BackIcon from '@/images/icon_back.svg';
-import React, { useState } from 'react';
 import { useWalletData } from '../../hooks/useWalletData';
+import { useExtrato } from '../../hooks/useExtrato';
+import { useAntecipacoes } from '../../hooks/useAntecipacoes';
+import { useTransferencias } from '../../hooks/useTransferencias';
 import { Colors } from '../../constants/Colors';
 
 export default function WalletScreen() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('Extrato');
-  const { walletData, isLoading, error, refreshData } = useWalletData();
+  const { walletData, isLoading: walletLoading, error: walletError, refreshData: refreshWallet } = useWalletData();
+  
+  // Hooks para cada tipo de movimentação
+  const { 
+    extrato, 
+    isLoading: extratoLoading, 
+    error: extratoError, 
+    refreshData: refreshExtrato, 
+    loadMore: loadMoreExtrato, 
+    hasMore: hasMoreExtrato 
+  } = useExtrato(10);
+  
+  const { 
+    antecipacoes, 
+    isLoading: antecipacoesLoading, 
+    error: antecipacoesError, 
+    refreshData: refreshAntecipacoes, 
+    loadMore: loadMoreAntecipacoes, 
+    hasMore: hasMoreAntecipacoes 
+  } = useAntecipacoes(10);
+  
+  const { 
+    transferencias, 
+    isLoading: transferenciasLoading, 
+    error: transferenciasError, 
+    refreshData: refreshTransferencias, 
+    loadMore: loadMoreTransferencias, 
+    hasMore: hasMoreTransferencias 
+  } = useTransferencias(10);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -38,32 +72,60 @@ export default function WalletScreen() {
 
   // Função para verificar se há dados para uma seção específica
   const hasDataForSection = (section: string): boolean => {
-    if (!walletData) return false;
-    
     switch (section) {
       case 'Extrato':
-        return walletData.movimentacoes && walletData.movimentacoes.length > 0;
+        return extrato.length > 0;
       case 'Antecipações':
-        // Quando tivermos endpoint específico, verificar dados de antecipações
-        return false;
+        return antecipacoes.length > 0;
       case 'Transferências':
-        // Quando tivermos endpoint específico, verificar dados de transferências
-        return false;
+        return transferencias.length > 0;
       default:
         return false;
     }
   };
 
+  // Função para obter loading state da seção ativa
+  const getActiveLoadingState = (): boolean => {
+    switch (activeFilter) {
+      case 'Extrato':
+        return extratoLoading;
+      case 'Antecipações':
+        return antecipacoesLoading;
+      case 'Transferências':
+        return transferenciasLoading;
+      default:
+        return false;
+    }
+  };
+
+  // Função para obter error state da seção ativa
+  const getActiveErrorState = (): string | null => {
+    switch (activeFilter) {
+      case 'Extrato':
+        return extratoError;
+      case 'Antecipações':
+        return antecipacoesError;
+      case 'Transferências':
+        return transferenciasError;
+      default:
+        return null;
+    }
+  };
+
+
+
   // Componente para estado vazio dinâmico
   const EmptyState = () => (
     <View style={styles.emptyStateContainer}>
-      <Image source={require('../../assets/images/obj3d.png')} style={styles.emptyStateImage} />
-      <Text style={styles.emptyStateText}>Ainda não há nada por aqui...</Text>
+      <Text style={styles.emptyStateText}>Nenhuma movimentação encontrada</Text>
     </View>
   );
 
   const renderContent = () => {
-    if (isLoading) {
+    const isLoading = getActiveLoadingState();
+    const error = getActiveErrorState();
+
+    if (isLoading && !hasDataForSection(activeFilter)) {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.blue['01']} />
@@ -72,7 +134,7 @@ export default function WalletScreen() {
       );
     }
 
-    if (error) {
+    if (error && !hasDataForSection(activeFilter)) {
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Erro ao carregar dados</Text>
@@ -90,24 +152,46 @@ export default function WalletScreen() {
     switch (activeFilter) {
       case 'Extrato':
         return (
-          <TransactionList 
-            transactions={walletData?.movimentacoes || []} 
+          <ExtratoList 
+            extrato={extrato}
+            isLoading={extratoLoading}
+            error={extratoError}
+            onLoadMore={loadMoreExtrato}
+            hasMore={hasMoreExtrato}
             formatCurrency={formatCurrency}
             formatDate={formatDate}
           />
         );
       case 'Antecipações':
-        // Quando tivermos dados de antecipações, renderizar aqui
-        return <EmptyState />;
+        return (
+          <AntecipacoesList 
+            antecipacoes={antecipacoes}
+            isLoading={antecipacoesLoading}
+            error={antecipacoesError}
+            onLoadMore={loadMoreAntecipacoes}
+            hasMore={hasMoreAntecipacoes}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+          />
+        );
       case 'Transferências':
-        // Quando tivermos dados de transferências, renderizar aqui
-        return <EmptyState />;
+        return (
+          <TransferenciasList 
+            transferencias={transferencias}
+            isLoading={transferenciasLoading}
+            error={transferenciasError}
+            onLoadMore={loadMoreTransferencias}
+            hasMore={hasMoreTransferencias}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+          />
+        );
       default:
         return <EmptyState />;
     }
   };
 
-  if (isLoading && !walletData) {
+  if (walletLoading && !walletData) {
     return (
       <View style={styles.fullLoadingContainer}>
         <ActivityIndicator size="large" color={Colors.blue['01']} />
@@ -128,7 +212,7 @@ export default function WalletScreen() {
       </View>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
+          <RefreshControl refreshing={walletLoading} onRefresh={refreshWallet} />
         }
       >
         <BalanceCards 
@@ -156,6 +240,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+
   fullLoadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -233,11 +318,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 50,
-  },
-  emptyStateImage: {
-    width: 150,
-    height: 150,
-    marginBottom: 20,
   },
   emptyStateText: {
     color: 'gray',

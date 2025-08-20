@@ -1,42 +1,64 @@
 import { useState, useEffect } from 'react';
 import { api, Subconta } from '../services/api';
 
+// Interface específica para o AccountSwitcher
+export interface AccountSubconta {
+  id: string;
+  name: string;
+  foto?: string;
+  type: string;
+  status?: string;
+}
+
 export interface SubcontasHook {
-  subcontas: Subconta[];
+  subcontas: AccountSubconta[];
   isLoading: boolean;
   error: string | null;
   refreshData: () => void;
 }
 
-export const useSubcontas = () => {
-  const [subcontas, setSubcontas] = useState<Subconta[]>([]);
+export const useSubcontas = (): SubcontasHook => {
+  const [subcontas, setSubcontas] = useState<AccountSubconta[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSubcontas = async () => {
-    setIsLoading(true);
-    setError(null);
-
     try {
-      console.log('🏦 === CARREGANDO SUBCONTAS ===');
-      const result = await api.getSubcontas();
+      console.log('🏢 === BUSCANDO SUBCONTAS ===');
+      setIsLoading(true);
+      setError(null);
 
-      if (result.success && result.data) {
-        console.log('✅ === SUBCONTAS OBTIDAS ===');
-        console.log('🏦 Total de subcontas:', result.data.length);
+      const response = await api.getSubcontas();
+      
+      if (response.success && response.data) {
         console.log('✅ Subcontas carregadas com sucesso');
-        setSubcontas(result.data);
+        console.log('📋 Total de subcontas:', response.data.length);
+        
+        // Mapear dados para o formato do AccountSwitcher
+        const accountSubcontas: AccountSubconta[] = response.data.map((subconta: Subconta) => ({
+          id: subconta.id,
+          name: subconta.nome,
+          foto: '', // A API não retorna foto, usar ícone padrão
+          type: 'Conta empresarial',
+          status: subconta.status,
+        }));
+        
+        setSubcontas(accountSubcontas);
       } else {
-        console.log('❌ === ERRO AO CARREGAR SUBCONTAS ===');
-        setError(result.error || 'Erro ao carregar subcontas');
+        console.log('❌ Erro ao carregar subcontas:', response.error);
+        setError(response.error || 'Erro ao carregar subcontas');
       }
     } catch (err) {
-      console.log('💥 === ERRO INESPERADO ===');
-      const errorMessage = err instanceof Error ? err.message : 'Erro inesperado';
-      setError(errorMessage);
+      console.log('💥 Erro inesperado ao carregar subcontas:', err);
+      setError('Erro inesperado ao carregar subcontas');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const refreshData = () => {
+    console.log('🔄 === ATUALIZANDO SUBCONTAS ===');
+    fetchSubcontas();
   };
 
   useEffect(() => {
@@ -47,6 +69,6 @@ export const useSubcontas = () => {
     subcontas,
     isLoading,
     error,
-    refreshData: fetchSubcontas,
+    refreshData,
   };
 };

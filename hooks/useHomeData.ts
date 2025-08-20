@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { api, DashboardData } from '../services/api';
+import { api, DashboardData, WalletData } from '../services/api';
 
 export type PeriodFilter = '30 dias' | '15 dias' | 'Ontem' | 'Hoje';
 
 export interface HomeData {
   dashboardData: DashboardData | null;
+  walletData: WalletData | null;
   isLoading: boolean;
   error: string | null;
   refreshData: () => void;
@@ -14,6 +15,7 @@ export interface HomeData {
 
 export const useHomeData = (): HomeData => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPeriod, setCurrentPeriod] = useState<PeriodFilter>('30 dias');
@@ -54,14 +56,26 @@ export const useHomeData = (): HomeData => {
 
       console.log('📅 Período calculado:', `${startDateStr} até ${endDateStr} (${period})`);
 
-      const response = await api.getDashboardData(startDateStr, endDateStr);
+      // Buscar dados do dashboard (com período)
+      const dashboardResponse = await api.getDashboardData(startDateStr, endDateStr);
       
-      if (response.success && response.data) {
-        console.log('✅ Dados da home carregados com sucesso');
-        setDashboardData(response.data);
+      // Buscar dados da carteira (sem período - saldo total)
+      const walletResponse = await api.getWalletData();
+      
+      if (dashboardResponse.success && dashboardResponse.data) {
+        console.log('✅ Dados do dashboard carregados com sucesso');
+        setDashboardData(dashboardResponse.data);
       } else {
-        console.log('❌ Erro ao carregar dados da home:', response.error);
-        setError(response.error || 'Erro ao carregar dados');
+        console.log('❌ Erro ao carregar dados do dashboard:', dashboardResponse.error);
+        setError(dashboardResponse.error || 'Erro ao carregar dados do dashboard');
+      }
+
+      if (walletResponse.success && walletResponse.data) {
+        console.log('✅ Dados da carteira carregados com sucesso');
+        setWalletData(walletResponse.data);
+      } else {
+        console.log('❌ Erro ao carregar dados da carteira:', walletResponse.error);
+        // Não definir erro aqui para não sobrescrever erro do dashboard
       }
     } catch (err) {
       console.log('💥 Erro inesperado ao carregar dados da home:', err);
@@ -88,6 +102,7 @@ export const useHomeData = (): HomeData => {
 
   return {
     dashboardData,
+    walletData,
     isLoading,
     error,
     refreshData,
