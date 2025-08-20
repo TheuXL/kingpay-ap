@@ -847,6 +847,8 @@ class KingPayAPI {
     }
   }
 
+
+
   // Método para marcar notificação como lida
   async markNotificationAsRead(notificationId: string): Promise<ApiResponse<boolean>> {
     try {
@@ -2208,6 +2210,119 @@ class KingPayAPI {
       console.log('Erro:', error);
       return { success: false, error: 'Erro inesperado ao simular taxas' };
     }
+  }
+
+  // Método para buscar dados de uma chave PIX cadastrada
+  async getPixKeyData(pixKey: string): Promise<ApiResponse<any>> {
+    try {
+      console.log('🔍 === BUSCANDO DADOS DA CHAVE PIX ===');
+      console.log('🔑 Chave PIX:', pixKey);
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      // Buscar todas as chaves PIX cadastradas
+      const url = `${supabaseUrl}/functions/v1/pix-key`;
+      
+      console.log('📤 === BUSCANDO CHAVES PIX CADASTRADAS ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      
+      console.log('📥 === RESPOSTA CHAVES PIX ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data && data.data) {
+        // Procurar pela chave PIX específica
+        const pixKeyData = data.data.find((key: any) => key.key === pixKey);
+        
+        if (pixKeyData) {
+          console.log('✅ === CHAVE PIX ENCONTRADA ===');
+          console.log('ID:', pixKeyData.id);
+          console.log('Tipo:', pixKeyData.type);
+          console.log('Descrição:', pixKeyData.description);
+          
+          // Retornar dados do beneficiário baseado na chave encontrada
+          const beneficiaryData = {
+            name: pixKeyData.companyName || 'Beneficiário',
+            document: pixKeyData.companyTaxId || pixKeyData.key,
+            bank: pixKeyData.description || 'Banco',
+            accountType: 'Conta Corrente',
+            isValid: pixKeyData.v || false,
+            pixKey: pixKeyData.key,
+            pixKeyType: pixKeyData.type,
+            pixKeyId: pixKeyData.id
+          };
+
+          console.log('📥 === DADOS DO BENEFICIÁRIO ===');
+          console.log('Data:', JSON.stringify(beneficiaryData, null, 2));
+
+          console.log('✅ === DADOS OBTIDOS ===');
+          console.log('👤 Nome:', beneficiaryData.name);
+          console.log('📄 Documento:', beneficiaryData.document);
+          console.log('🏦 Banco:', beneficiaryData.bank);
+          
+          return {
+            success: true,
+            data: beneficiaryData,
+          };
+        } else {
+          console.log('❌ === CHAVE PIX NÃO ENCONTRADA ===');
+          return {
+            success: false,
+            error: 'Chave PIX não encontrada. Verifique se a chave está cadastrada.',
+          };
+        }
+      } else {
+        console.log('❌ === ERRO AO BUSCAR CHAVES PIX ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar chaves PIX',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO BUSCA PIX ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método auxiliar para determinar o tipo da chave PIX
+  private getPixKeyType(pixKey: string): string {
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pixKey);
+    const isValidCPF = /^\d{11}$/.test(pixKey);
+    const isValidCNPJ = /^\d{14}$/.test(pixKey);
+    const isValidPhone = /^\d{10,11}$/.test(pixKey);
+    const isValidRandomKey = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pixKey);
+
+    if (isValidEmail) return 'EMAIL';
+    if (isValidCPF) return 'CPF';
+    if (isValidCNPJ) return 'CNPJ';
+    if (isValidPhone) return 'PHONE';
+    if (isValidRandomKey) return 'RANDOM';
+    return 'UNKNOWN';
   }
 }
 

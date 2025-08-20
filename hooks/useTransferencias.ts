@@ -34,7 +34,7 @@ export const useTransferencias = (limit: number = 10, status?: string) => {
         console.log('🔄 Total de transferências:', result.data.length);
         
         if (isLoadMore) {
-          setTransferencias(prev => [...prev, ...result.data]);
+          setTransferencias(prev => [...prev, ...(result.data || [])]);
         } else {
           setTransferencias(result.data);
         }

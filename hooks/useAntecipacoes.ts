@@ -34,7 +34,7 @@ export const useAntecipacoes = (limit: number = 10, status?: string) => {
         console.log('💰 Total de antecipações:', result.data.length);
         
         if (isLoadMore) {
-          setAntecipacoes(prev => [...prev, ...result.data]);
+          setAntecipacoes(prev => [...prev, ...(result.data || [])]);
         } else {
           setAntecipacoes(result.data);
         }

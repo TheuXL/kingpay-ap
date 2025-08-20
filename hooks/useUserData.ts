@@ -23,7 +23,7 @@ export const useUserData = () => {
       
       if (response.success && response.data) {
         // A resposta da API pode vir aninhada em um campo 'user'
-        const userData = response.data.user || response.data;
+        const userData = (response.data as any).user || response.data;
         setUserData(userData);
       } else {
         setError(response.error || 'Erro ao buscar dados do usuário');
@@ -52,7 +52,7 @@ export const useUserData = () => {
       const response = await api.updateUserData(user.id, updatedData);
       
       if (response.success && response.data) {
-        const userData = response.data.user || response.data;
+        const userData = (response.data as any).user || response.data;
         setUserData(userData);
         return { success: true };
       } else {

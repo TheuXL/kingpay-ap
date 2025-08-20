@@ -1,16 +1,34 @@
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
 import AlertaConfirmacaoIcon from '@/images/solicitar saque/alerta confirmação.svg';
 import BotaoConcluirIcon from '@/images/solicitar saque/botão concluir.svg';
+import { useWithdrawProcess } from '@/hooks/useWithdrawProcess';
+import { api } from '@/services/api';
 
 export default function WithdrawConfirmationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { accountId, accountName, accountBank, amount, amountFormatted } = params;
+  const { 
+    accountId, accountName, accountBank, accountType,
+    pixKeyId, pixKeyValue, pixKeyType,
+    beneficiaryName, beneficiaryDocument, beneficiaryBank,
+    amount, amountFormatted 
+  } = params;
   
-  const [isLoading, setIsLoading] = useState(false);
+  const { createWithdrawal, isLoading, error } = useWithdrawProcess();
+
+  // Log dos parâmetros recebidos
+  console.log('✅ === PARÂMETROS DE CONFIRMAÇÃO ===');
+  console.log('🏦 Account ID:', accountId);
+  console.log('🏦 Account Name:', accountName);
+  console.log('🏦 Account Bank:', accountBank);
+  console.log('🔑 PIX Key:', pixKeyValue);
+  console.log('👤 Beneficiary Name:', beneficiaryName);
+  console.log('👤 Beneficiary Document:', beneficiaryDocument);
+  console.log('👤 Beneficiary Bank:', beneficiaryBank);
+  console.log('💰 Amount:', amount);
 
   const formatCurrency = (cents: string) => {
     const amountInCents = parseInt(cents);
@@ -26,36 +44,52 @@ export default function WithdrawConfirmationScreen() {
   };
 
   const handleConfirm = async () => {
-    setIsLoading(true);
-    
     try {
       console.log('✅ === CONFIRMANDO SAQUE ===');
-      console.log('🏦 Conta:', accountName);
-      console.log('🏦 Banco:', accountBank);
+      console.log('👤 Beneficiário:', beneficiaryName);
+      console.log('📄 Documento:', beneficiaryDocument);
+      console.log('🏦 Banco:', beneficiaryBank);
+      console.log('🔑 Chave PIX:', pixKeyValue);
       console.log('💰 Valor:', amount, 'centavos');
       console.log('📅 Data:', formatDate());
 
-      // Simular processamento
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      console.log('✅ === SAQUE CONFIRMADO ===');
+      // Criar saque usando a API real
+      const amountInCents = parseInt(amount as string);
+      const description = `Saque para ${beneficiaryName || accountName}`;
       
-      // Navegar para tela de sucesso
-      router.push({
-        pathname: '/(app)/withdraw-success',
-        params: {
-          accountName: accountName as string,
-          amount: amount as string,
-          amountFormatted: amountFormatted as string,
-          date: formatDate()
-        }
+      // Usar a API diretamente para criar o saque
+      const response = await api.createWithdrawal({
+        pixkeyid: pixKeyId as string, // Usar o ID real da chave PIX
+        requestedamount: amountInCents,
+        description: description,
+        isPix: true
       });
+
+      if (response.success && response.data) {
+        console.log('✅ === SAQUE CRIADO COM SUCESSO ===');
+        console.log('🆔 ID:', response.data.id);
+        console.log('📊 Status:', response.data.status);
+        
+        // Navegar para tela de sucesso
+        router.push({
+          pathname: '/(app)/withdraw-success',
+          params: {
+            accountName: beneficiaryName || accountName as string,
+            amount: amount as string,
+            amountFormatted: amountFormatted as string,
+            date: formatDate(),
+            withdrawalId: response.data.id
+          }
+        });
+      } else {
+        console.log('❌ === ERRO AO CRIAR SAQUE ===');
+        console.log('Erro:', response.error);
+        Alert.alert('Erro', response.error || 'Não foi possível criar o saque. Tente novamente.');
+      }
       
     } catch (error) {
       console.log('❌ === ERRO AO CONFIRMAR SAQUE ===');
       Alert.alert('Erro', 'Não foi possível confirmar o saque. Tente novamente.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -71,17 +105,27 @@ export default function WithdrawConfirmationScreen() {
       </View>
 
       <View style={styles.content}>
-        {/* Informações do destinatário - Dados virão do backend */}
+        {/* Informações do destinatário */}
         <View style={styles.recipientSection}>
           <Text style={styles.recipientTitle}>
-            Enviando para <Text style={styles.recipientName}>{accountName}</Text>
+            Enviando para <Text style={styles.recipientName}>
+              {beneficiaryName || accountName}
+            </Text>
           </Text>
-          <Text style={styles.recipientDetails}>
-            CPF: ***.234.134-** - {accountBank}
-          </Text>
-          <Text style={styles.recipientDetails}>
-            Chave: +55 (**) *****-3465
-          </Text>
+          {beneficiaryDocument ? (
+            <Text style={styles.recipientDetails}>
+              CPF: {beneficiaryDocument} - {beneficiaryBank}
+            </Text>
+          ) : (
+            <Text style={styles.recipientDetails}>
+              {accountBank}
+            </Text>
+          )}
+          {pixKeyValue && (
+            <Text style={styles.recipientDetails}>
+              Chave: {pixKeyValue}
+            </Text>
+          )}
         </View>
 
         {/* Valor */}

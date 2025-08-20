@@ -5,14 +5,24 @@ import BackIcon from '@/images/icon_back.svg';
 import AlertaIcon from '@/images/solicitar saque/alerta.svg';
 import BotaoAvancarIcon from '@/images/solicitar saque/botão avançar.svg';
 import { useWithdrawData } from '@/hooks/useWithdrawData';
+import { useWithdrawProcess } from '@/hooks/useWithdrawProcess';
 
 export default function WithdrawAmountScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { accountId, accountName, accountBank, accountType, pixKeyId, pixKeyValue, pixKeyType } = params;
+  const { 
+    accountId, accountName, accountBank, accountType, 
+    pixKeyId, pixKeyValue, pixKeyType,
+    beneficiaryName, beneficiaryDocument, beneficiaryBank 
+  } = params;
   
   const [amount, setAmount] = useState('');
   const { withdrawData, isLoading, error } = useWithdrawData();
+  const { beneficiaryData, createWithdrawal, isLoading: creatingWithdrawal, error: withdrawalError } = useWithdrawProcess();
+
+  // Log dos dados do beneficiário
+  console.log('👤 === DADOS DO BENEFICIÁRIO NA TELA DE VALOR ===');
+  console.log('Beneficiary Data:', beneficiaryData);
 
   // Log dos parâmetros recebidos
   console.log('💰 === PARÂMETROS RECEBIDOS ===');
@@ -23,6 +33,9 @@ export default function WithdrawAmountScreen() {
   console.log('🔑 PIX Key ID:', pixKeyId);
   console.log('🔑 PIX Key Value:', pixKeyValue);
   console.log('🔑 PIX Key Type:', pixKeyType);
+  console.log('👤 Beneficiary Name:', beneficiaryName);
+  console.log('👤 Beneficiary Document:', beneficiaryDocument);
+  console.log('👤 Beneficiary Bank:', beneficiaryBank);
 
   const formatCurrency = (value: string) => {
     // Remove tudo exceto números
@@ -41,7 +54,7 @@ export default function WithdrawAmountScreen() {
     setAmount(formatted);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validar se há dados de destino (conta ou chave PIX)
     if (!accountId && !pixKeyValue) {
       Alert.alert('Erro', 'Por favor, selecione uma conta ou digite uma chave PIX');
@@ -66,14 +79,14 @@ export default function WithdrawAmountScreen() {
       return;
     }
 
-    console.log('💰 === VALOR SELECIONADO ===');
+    console.log('💰 === INICIANDO PROCESSO DE SAQUE ===');
     console.log('💰 Valor:', amountInCents, 'centavos');
     console.log('🏦 Conta:', accountName);
     console.log('🏦 Banco:', accountBank);
     console.log('🔑 PIX Key:', pixKeyValue);
     console.log('🔑 PIX Type:', pixKeyType);
 
-    // Navegar para a tela de confirmação
+    // Navegar para a tela de confirmação com dados do beneficiário
     router.push({
       pathname: '/(app)/withdraw-confirmation',
       params: {
@@ -81,9 +94,12 @@ export default function WithdrawAmountScreen() {
         accountName: accountName as string,
         accountBank: accountBank as string,
         accountType: accountType as string,
-        pixKeyId: pixKeyId as string,
+        pixKeyId: beneficiaryData?.pixKeyId || pixKeyId as string, // Usar ID real da chave PIX
         pixKeyValue: pixKeyValue as string,
         pixKeyType: pixKeyType as string,
+        beneficiaryName: beneficiaryData?.name || beneficiaryName as string,
+        beneficiaryDocument: beneficiaryData?.document || beneficiaryDocument as string,
+        beneficiaryBank: beneficiaryData?.bank || beneficiaryBank as string,
         amount: amountInCents.toString(),
         amountFormatted: amount
       }

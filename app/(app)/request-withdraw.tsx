@@ -8,12 +8,14 @@ import SetaChavesCadastradasIcon from '@/images/solicitar saque/seta chaves cada
 import BotaoAvancarIcon from '@/images/solicitar saque/botão avançar.svg';
 import { useSubcontas } from '@/hooks/useSubcontas';
 import { usePixKeys } from '@/hooks/usePixKeys';
+import { useWithdrawProcess } from '@/hooks/useWithdrawProcess';
 
 export default function RequestWithdrawScreen() {
   const router = useRouter();
   const [selectedPixKey, setSelectedPixKey] = useState<string>('');
   const { subcontas, isLoading: subcontasLoading, error: subcontasError } = useSubcontas();
   const { pixKeys, isLoading: pixKeysLoading } = usePixKeys();
+  const { validatePixKey, isLoading: validatingPix, error: pixError } = useWithdrawProcess();
 
   const getInitials = (name: string) => {
     return name
@@ -41,7 +43,7 @@ export default function RequestWithdrawScreen() {
     });
   };
 
-  const handleManualPixKey = () => {
+  const handleManualPixKey = async () => {
     if (!selectedPixKey.trim()) {
       Alert.alert('Erro', 'Por favor, digite uma chave PIX válida');
       return;
@@ -62,21 +64,33 @@ export default function RequestWithdrawScreen() {
       return;
     }
 
-    console.log('🔑 === CHAVE PIX VALIDADA ===');
+    console.log('🔑 === INICIANDO VALIDAÇÃO PIX ===');
     console.log('Chave:', pixKey);
     console.log('Tipo:', isValidEmail ? 'EMAIL' : isValidCPF ? 'CPF' : isValidCNPJ ? 'CNPJ' : isValidPhone ? 'PHONE' : 'RANDOM');
     
-    router.push({
-      pathname: '/(app)/withdraw-amount',
-      params: {
-        pixKeyId: 'manual',
-        pixKeyValue: pixKey,
-        pixKeyType: isValidEmail ? 'EMAIL' : isValidCPF ? 'CPF' : isValidCNPJ ? 'CNPJ' : isValidPhone ? 'PHONE' : 'RANDOM'
-      }
-    });
+    // Validar chave PIX no backend e buscar dados do beneficiário
+    const isValid = await validatePixKey(pixKey);
+    
+    if (isValid) {
+      console.log('✅ === CHAVE PIX VALIDADA COM SUCESSO ===');
+      console.log('👤 Dados do beneficiário obtidos');
+      
+      // Navegar para a próxima tela com dados do beneficiário
+      router.push({
+        pathname: '/(app)/withdraw-amount',
+        params: {
+          pixKeyId: 'manual', // Será substituído pelo ID real da chave
+          pixKeyValue: pixKey,
+          pixKeyType: isValidEmail ? 'EMAIL' : isValidCPF ? 'CPF' : isValidCNPJ ? 'CNPJ' : isValidPhone ? 'PHONE' : 'RANDOM'
+        }
+      });
+    } else {
+      console.log('❌ === ERRO NA VALIDAÇÃO PIX ===');
+      Alert.alert('Erro', 'Não foi possível validar a chave PIX. Verifique se a chave está cadastrada.');
+    }
   };
 
-  if (subcontasLoading || pixKeysLoading) {
+  if (subcontasLoading || pixKeysLoading || validatingPix) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1E293B" />
@@ -148,7 +162,8 @@ export default function RequestWithdrawScreen() {
         
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => router.push('/(app)/withdraw-amount')}
+          onPress={handleManualPixKey}
+          disabled={!selectedPixKey.trim() || validatingPix}
         >
           <BotaoAvancarIcon width="100%" height={56} />
         </TouchableOpacity>

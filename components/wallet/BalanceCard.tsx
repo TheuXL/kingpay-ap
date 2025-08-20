@@ -1,7 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
 
 type BalanceCardProps = {
   approvedSales: number;
@@ -31,48 +30,14 @@ export function BalanceCard({
           <ThemedText style={styles.summaryPercentage}>{percentageIncrease}</ThemedText>
         </View>
         <View style={styles.divider} />
-        <LineChart
-          data={{
-            labels: [],
-            datasets: [
-              {
-                data: [
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                  Math.random() * 100,
-                ],
-              },
-            ],
-          }}
-          width={120}
-          height={60}
-          withDots={true}
-          withInnerLines={false}
-          withOuterLines={false}
-          withVerticalLabels={false}
-          withHorizontalLabels={false}
-          chartConfig={{
-            backgroundColor: '#FFFFFF',
-            backgroundGradientFrom: '#FFFFFF',
-            backgroundGradientTo: '#FFFFFF',
-            decimalPlaces: 2,
-            color: (opacity = 1) => `rgba(40, 167, 69, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-            propsForDots: {
-              r: '4',
-              strokeWidth: '2',
-              stroke: '#28a745',
-            },
-          }}
-          bezier
-          style={styles.chart}
-        />
+        <View style={styles.simpleChart}>
+          <View style={styles.chartBar} />
+          <View style={[styles.chartBar, { height: 20 }]} />
+          <View style={[styles.chartBar, { height: 35 }]} />
+          <View style={[styles.chartBar, { height: 25 }]} />
+          <View style={[styles.chartBar, { height: 40 }]} />
+          <View style={[styles.chartBar, { height: 30 }]} />
+        </View>
       </View>
       <View style={styles.summaryDetails}>
         <View style={styles.summaryRow}>
@@ -133,6 +98,20 @@ const styles = StyleSheet.create({
   chart: {
     marginVertical: 8,
     borderRadius: 16,
+  },
+  simpleChart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    width: 120,
+    height: 60,
+    paddingHorizontal: 4,
+  },
+  chartBar: {
+    width: 8,
+    backgroundColor: '#28a745',
+    borderRadius: 4,
+    marginHorizontal: 2,
   },
   summaryTitle: {
     fontSize: 16,

@@ -34,7 +34,7 @@ export const useExtrato = (limit: number = 10) => {
         console.log('📋 Total de itens:', result.data.length);
         
         if (isLoadMore) {
-          setExtrato(prev => [...prev, ...result.data]);
+          setExtrato(prev => [...prev, ...(result.data || [])]);
         } else {
           setExtrato(result.data);
         }

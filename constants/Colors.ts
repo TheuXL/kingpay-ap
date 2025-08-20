@@ -4,6 +4,16 @@
  */
 
 export const Colors = {
+  light: {
+    icon: '#1E293B',
+    background: '#FFFFFF',
+    text: '#000000',
+  },
+  dark: {
+    icon: '#FFFFFF',
+    background: '#000000',
+    text: '#FFFFFF',
+  },
   blue: {
     '01': '#0000FF', // Blue-01
     '02': '#0000CD', // Blue-02

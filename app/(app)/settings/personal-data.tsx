@@ -74,11 +74,11 @@ export default function PersonalDataScreen() {
     setUpdateLoading(true);
     try {
       const result = await updateUserData(editData);
-      if (result.success) {
+      if (result?.success) {
         Alert.alert('Sucesso', 'Dados atualizados com sucesso!');
         setIsEditing(false);
       } else {
-        Alert.alert('Erro', result.error || 'Erro ao atualizar dados');
+        Alert.alert('Erro', result?.error || 'Erro ao atualizar dados');
       }
     } catch (error) {
       Alert.alert('Erro', 'Erro inesperado ao atualizar dados');
