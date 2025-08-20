@@ -220,25 +220,29 @@ export interface ApiResponse<T = any> {
 
 export interface PixKey {
   id: string;
-  key_type: string;
-  key_value: string;
+  type: string;
+  key: string;
   description?: string;
-  status: 'active' | 'inactive';
-  created_at: string;
-  updated_at: string;
+  v: boolean;
+  createdat: string;
+  updatedat: string;
+  companyId?: string;
+  companyName?: string;
+  companyTaxId?: string;
+  creator?: string;
 }
 
 export interface CreatePixKeyData {
-  key_type: string;
-  key_value: string;
+  type: string;
+  key: string;
   description?: string;
 }
 
 export interface UpdatePixKeyData {
-  key_type?: string;
-  key_value?: string;
+  type?: string;
+  key?: string;
   description?: string;
-  status?: 'active' | 'inactive';
+  v?: boolean;
 }
 
 // Tipos para Configurações
@@ -302,6 +306,39 @@ export interface TaxSimulationResponse {
   taxaIntermediacao: string;
   totalTaxas: string;
   valorLiquido: string;
+}
+
+// Tipos para Subcontas
+export interface Subconta {
+  id: string;
+  nome: string;
+  banco: string;
+  agencia: string;
+  conta: string;
+  tipo_conta: string;
+  status: string;
+  empresa: string;
+  ativo: boolean;
+  created_at: string;
+}
+
+// Tipos para Saques
+export interface Withdrawal {
+  id: string;
+  pixkeyid: string;
+  requestedamount: number;
+  description: string;
+  isPix: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateWithdrawalData {
+  pixkeyid: string;
+  requestedamount: number;
+  description: string;
+  isPix: boolean;
 }
 
 // Classe principal da API
@@ -1357,12 +1394,13 @@ class KingPayAPI {
       }
 
       console.log('🔑 === EXCLUINDO CHAVE PIX ===');
-      console.log('📤 === REQUISIÇÃO EXCLUIR CHAVE PIX ===');
+      
+      // Primeiro, tentar DELETE direto
+      console.log('📤 === TENTATIVA 1: DELETE DIRETO ===');
       console.log('Método: DELETE');
       console.log('URL:', `${supabaseUrl}/functions/v1/pix-key/${id}`);
-      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/pix-key/${id}`, {
+      
+      const deleteResponse = await fetch(`${supabaseUrl}/functions/v1/pix-key/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1370,21 +1408,137 @@ class KingPayAPI {
         },
       });
 
-      console.log('📥 === RESPOSTA EXCLUIR CHAVE PIX ===');
+      console.log('📥 === RESPOSTA DELETE ===');
+      console.log('Status:', deleteResponse.status);
+
+      if (deleteResponse.ok) {
+        const deleteData = await deleteResponse.json();
+        console.log('Data:', deleteData);
+        return { success: true, data: true };
+      }
+
+      // Se DELETE falhar, tentar exclusão lógica via PUT
+      if (deleteResponse.status === 404) {
+        console.log('❌ === DELETE NÃO DISPONÍVEL, TENTANDO EXCLUSÃO LÓGICA ===');
+        console.log('📤 === TENTATIVA 2: PUT PARA DESATIVAR ===');
+        console.log('Método: PUT');
+        console.log('URL:', `${supabaseUrl}/functions/v1/pix-key/${id}`);
+        
+        const putResponse = await fetch(`${supabaseUrl}/functions/v1/pix-key/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            active: false,
+            deleted: true
+          }),
+        });
+
+        console.log('📥 === RESPOSTA PUT ===');
+        console.log('Status:', putResponse.status);
+
+        const putData = await putResponse.json();
+        console.log('Data:', putData);
+
+        if (putResponse.ok) {
+          return { success: true, data: true };
+        } else {
+          return { success: false, error: putData.error || 'Erro ao desativar chave PIX' };
+        }
+      }
+
+      const deleteData = await deleteResponse.json();
+      console.log('Data:', deleteData);
+      return { success: false, error: deleteData.error || 'Erro ao excluir chave PIX' };
+      
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO EXCLUIR CHAVE PIX ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao excluir chave PIX' };
+    }
+  }
+
+  // Métodos para Subcontas
+  async getSubcontas(): Promise<ApiResponse<Subconta[]>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('🏦 === BUSCANDO SUBCONTAS ===');
+      console.log('📤 === REQUISIÇÃO SUBCONTAS ===');
+      console.log('Método: GET');
+      console.log('URL:', `${supabaseUrl}/functions/v1/subconta`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/subconta`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('📥 === RESPOSTA SUBCONTAS ===');
       console.log('Status:', response.status);
 
       const data = await response.json();
       console.log('Data:', data);
 
       if (response.ok) {
-        return { success: true, data: true };
+        return { success: true, data: data.data || [] };
       } else {
-        return { success: false, error: data.error || 'Erro ao excluir chave PIX' };
+        return { success: false, error: data.error || 'Erro ao buscar subcontas' };
       }
     } catch (error) {
-      console.log('💥 === ERRO INESPERADO EXCLUIR CHAVE PIX ===');
+      console.log('💥 === ERRO INESPERADO SUBCONTAS ===');
       console.log('Erro:', error);
-      return { success: false, error: 'Erro inesperado ao excluir chave PIX' };
+      return { success: false, error: 'Erro inesperado ao buscar subcontas' };
+    }
+  }
+
+  // Métodos para Saques
+  async createWithdrawal(withdrawalData: CreateWithdrawalData): Promise<ApiResponse<Withdrawal>> {
+    try {
+      const token = await this.getStoredToken();
+      if (!token) {
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      console.log('💰 === CRIANDO SAQUE ===');
+      console.log('📤 === REQUISIÇÃO CRIAR SAQUE ===');
+      console.log('Método: POST');
+      console.log('URL:', `${supabaseUrl}/functions/v1/withdrawals`);
+      console.log('Headers:', { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+      console.log('Body:', withdrawalData);
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/withdrawals`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(withdrawalData),
+      });
+
+      console.log('📥 === RESPOSTA CRIAR SAQUE ===');
+      console.log('Status:', response.status);
+
+      const data = await response.json();
+      console.log('Data:', data);
+
+      if (response.ok) {
+        return { success: true, data: data.data || data };
+      } else {
+        return { success: false, error: data.error || 'Erro ao criar saque' };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO CRIAR SAQUE ===');
+      console.log('Erro:', error);
+      return { success: false, error: 'Erro inesperado ao criar saque' };
     }
   }
 

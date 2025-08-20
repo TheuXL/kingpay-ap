@@ -86,14 +86,15 @@ export default function PixArea() {
 
     setIsDeleting(true);
     try {
-      const success = await deletePixKey(keyToDelete.id);
-      if (success) {
-        setConfirmModalVisible(false);
-        setKeyToDelete(null);
-        Alert.alert('Sucesso', 'Chave PIX excluída com sucesso!');
-      } else {
-        Alert.alert('Erro', 'Não foi possível excluir a chave PIX.');
-      }
+      // Função de exclusão desabilitada - apenas simular
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular delay
+      
+      setConfirmModalVisible(false);
+      setKeyToDelete(null);
+      Alert.alert(
+        'Funcionalidade Indisponível', 
+        'A exclusão de chaves PIX não está disponível no momento. Entre em contato com o suporte para mais informações.'
+      );
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro inesperado.');
     } finally {
@@ -171,7 +172,7 @@ export default function PixArea() {
           <View style={styles.infoBox}>
             <MaterialCommunityIcons name="information-outline" size={24} color="#333" style={styles.infoIcon} />
             <Text style={styles.infoText}>
-              Cadastre suas chaves PIX para receber transferências instantâneas. Cada tipo de chave pode ser cadastrado apenas uma vez.
+              Cadastre suas chaves PIX para receber transferências instantâneas. Cada tipo de chave pode ser cadastrado apenas uma vez. O limite máximo é de 5 chaves por conta.
             </Text>
           </View>
 
@@ -291,10 +292,10 @@ export default function PixArea() {
             </TouchableOpacity>
             
             <Text style={styles.confirmTitle}>
-              Você deseja realmente excluir sua chave Pix?
+              Funcionalidade Indisponível
             </Text>
             <Text style={styles.confirmSubtitle}>
-              Essa ação é irreversível.
+              A exclusão de chaves PIX não está disponível no momento. Entre em contato com o suporte para mais informações.
             </Text>
             
             <View style={styles.confirmButtons}>
@@ -304,14 +305,6 @@ export default function PixArea() {
                 disabled={isDeleting}
               >
                 <CancelarIcon width="100%" height="100%" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.confirmButton, isDeleting && styles.confirmButtonDisabled]}
-                onPress={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                <ConfirmarIcon width="100%" height="100%" />
               </TouchableOpacity>
             </View>
           </View>

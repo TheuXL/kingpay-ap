@@ -27,6 +27,9 @@ export default function AppLayout() {
           <Stack.Screen name="register-pix-key" options={{ headerShown: false }} />
           <Stack.Screen name="pix-key-success" options={{ headerShown: false }} />
           <Stack.Screen name="pix-area" options={{ headerShown: false }} />
+          <Stack.Screen name="withdraw-amount" options={{ headerShown: false }} />
+          <Stack.Screen name="withdraw-confirmation" options={{ headerShown: false }} />
+          <Stack.Screen name="withdraw-success" options={{ headerShown: false }} />
           <Stack.Screen name="transaction-details" options={{ headerShown: false }} />
           <Stack.Screen name="create-payment-link-personalize" options={{ headerShown: false }} />
         </Stack>
