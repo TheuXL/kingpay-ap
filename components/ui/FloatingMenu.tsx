@@ -38,13 +38,19 @@ export default function FloatingMenu() {
             return (
               <TouchableOpacity
                 key={item.path}
-                style={[styles.button, { flex: isActive ? 1.5 : 0.75 }]}
+                style={[styles.button, { flex: isActive ? 3.2 : 0.8 }]}
                 onPress={() => router.push(item.path as any)}
               >
                 {isActive ? (
                   <View style={styles.activeButton}>
                     {icon.active}
-                    <Text style={styles.activeButtonText}>{item.text}</Text>
+                    <Text 
+                      style={styles.activeButtonText}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {item.text}
+                    </Text>
                   </View>
                 ) : (
                   <View style={styles.iconWrapper}>
@@ -69,18 +75,21 @@ const styles = StyleSheet.create({
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
     paddingVertical: 10,
+    paddingHorizontal: 10,
     height: 80,
   },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
+    flex: 1,
   },
   iconWrapper: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -90,14 +99,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0D1B2A',
-    borderRadius: 30,
+    borderRadius: 100,
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 75,
+    minWidth: 160,
+    height: 60,
+    flex: 1,
   },
   activeButtonText: {
     color: 'white',
     marginLeft: 8,
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
+    flexShrink: 0,
+    textAlign: 'center',
   },
 });
