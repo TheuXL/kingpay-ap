@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     height: 450,
     resizeMode: 'contain',
     alignSelf: 'center',
-    marginBottom: 40,
+    marginBottom: 5, // Reduzido de 40 para 20 para mover elementos para cima
   },
   form: {
     width: '100%',
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     width: '100%',
-    marginTop: 'auto',
+    marginTop: 5, // Alterado de 'auto' para 40 para mover para cima
     marginBottom: 40,
   },
   loginButtonText: {

@@ -11,6 +11,7 @@ import { Colors } from '../../constants/Colors';
 import BackIcon from '../../images/icon_back.svg';
 import { useManagementData } from '../../hooks/useManagementData';
 import PeriodFilterModal from '../../components/home/PeriodFilterModal';
+import { SetaCalendarioIcon } from '../../components/ui/SetaCalendarioIcon';
 
 const { width } = Dimensions.get('window');
 const cardWidth = width - 40; // 20 padding on each side
@@ -107,13 +108,14 @@ export default function ManagementScreen() {
               onPress={handlePeriodPress}
             >
               <Text style={styles.periodText}>{currentPeriod}</Text>
+              <SetaCalendarioIcon width={13} height={8} color={Colors.blue['04']} />
             </TouchableOpacity>
           </View>
           <ScrollView
             ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            // onScroll={handleScroll}
+            onScroll={handleScroll}
             scrollEventThrottle={16}
             decelerationRate="fast"
             snapToInterval={cardWidth + 8}
@@ -129,6 +131,19 @@ export default function ManagementScreen() {
               </View>
             ))}
           </ScrollView>
+          
+          {/* Indicadores de paginação */}
+          <View style={styles.pagination}>
+            {charts.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  index === activeIndex && styles.dotActive
+                ]}
+              />
+            ))}
+          </View>
           
           <View style={styles.actions}>
             <TouchableOpacity style={styles.actionButton}>
@@ -168,13 +183,13 @@ export default function ManagementScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white['04'],
+    backgroundColor: Colors.white['01'],
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white['04'],
+    backgroundColor: Colors.white['01'],
   },
   loadingText: {
     marginTop: 10,
@@ -186,7 +201,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white['04'],
+    backgroundColor: Colors.white['01'],
     paddingHorizontal: 20,
   },
   errorText: {
@@ -203,7 +218,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
   },
   header: {
-    backgroundColor: Colors.white['04'],
+    backgroundColor: Colors.white['01'],
     // borderBottomWidth: 1,
     // borderBottomColor: Colors.gray['04'],
     paddingTop: 60,
@@ -249,15 +264,19 @@ const styles = StyleSheet.create({
   periodSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Colors.white['01'], // Cor de fundo white-01
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.gray['01'], // Linha circular gray-01
+    gap: 8, // Espaçamento entre texto e ícone
   },
   periodText: {
     fontSize: 14,
     color: Colors.blue['04'],
     fontFamily: 'Inter',
+    fontWeight: '500',
   },
   carousel: {
     flexDirection: 'row',
@@ -271,18 +290,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: -30, //Movido para cima (era 10, agora -10)
     marginBottom: 20,
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: Colors.gray['04'], // Gray-04 para dots não selecionados
     marginHorizontal: 4,
   },
   dotActive: {
-    backgroundColor: '#64748B',
+    backgroundColor: Colors.blue['03'], // Blue-03 para dot selecionado
   },
   actions: {
     flexDirection: 'row',

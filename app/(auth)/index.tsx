@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 80, // Movido mais para cima (era 40, agora 80)
     left: 20,
     width: '100%',
   },

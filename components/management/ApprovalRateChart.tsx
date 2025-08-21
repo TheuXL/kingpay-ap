@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.black['02'],
+    color: Colors.blue['04'],
   },
   expandButton: {
     fontSize: 18,
@@ -89,11 +89,11 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 16,
-    color: Colors.gray['01'],
+    color: Colors.gray['01'], // Pix, Cartão, Boleto - mantém gray-01
   },
   legendValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black['02'],
+    color: Colors.blue['04'], // Valores dos dados
   },
 });

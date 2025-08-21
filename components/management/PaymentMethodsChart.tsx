@@ -32,6 +32,7 @@ export default function PaymentMethodsChart({ managementData, formatCurrency }: 
         <FormaPagamentoIcon width={200} height={200} />
         <View style={styles.centerContent}>
           <Text style={styles.centerValue}>{formatCurrency(totalSales)}</Text>
+          <Text style={styles.centerLabel}>Em vendas</Text>
         </View>
       </View>
       
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.black['02'],
+    color: Colors.blue['04'],
   },
   expandButton: {
     fontSize: 18,
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   centerValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.black['02'],
+    color: Colors.blue['04'],
   },
   centerLabel: {
     fontSize: 16,
@@ -107,11 +108,11 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 16,
-    color: Colors.gray['01'],
+    color: Colors.gray['01'], // Pix, Cartão, Boleto - mantém gray-01
   },
   legendValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black['02'],
+    color: Colors.blue['04'], // Valores dos dados
   },
 });

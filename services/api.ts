@@ -194,7 +194,7 @@ export interface TransferenciaItem {
 }
 
 export interface ManagementData {
-  // Dados de formas de pagamento
+  // Dados de formas de pagamento (valores em centavos)
   pixSales: number;
   cardSales: number;
   boletoSales: number;
@@ -204,18 +204,36 @@ export interface ManagementData {
   totalTransactions: number;
   averageTicket: number;
   
-  // Dados de aprovação
+  // Dados de aprovação (percentuais)
   pixApprovalRate: number;
   cardApprovalRate: number;
   boletoApprovalRate: number;
   
-  // Dados de reembolsos
+  // Dados de reembolsos (valores em centavos)
   refunds: number;
   chargebacks: number;
   
   // Dados de links
   activeLinks: number;
   linkSales: number;
+  
+  // Dados adicionais do dashboard
+  countPixTotal: number;
+  countPixPaid: number;
+  countCardTotal: number;
+  countCardPaid: number;
+  countBoletoTotal: number;
+  countBoletoPaid: number;
+  conversionPix: number;
+  conversionCard: number;
+  conversionBoleto: number;
+  taxaAprovacao: number;
+  countRefunded: number;
+  sumRefunded: number;
+  countChargedback: number;
+  sumChargedback: number;
+  taxaChargeback: number;
+  taxaEstorno: number;
 }
 
 export interface TransactionMetricsData {
@@ -1127,35 +1145,66 @@ class KingPayAPI {
         console.log('📅 Usando período padrão (30 dias):', startDateStr, 'até', endDateStr);
       }
 
-      const dashboardResponse = await this.getDashboardData(startDateStr, endDateStr);
+      // Usar o endpoint correto do dashboard
+      const url = `${supabaseUrl}/functions/v1/dados-dashboard?start_date=${startDateStr}&end_date=${endDateStr}`;
+      console.log('🌐 URL do dashboard:', url);
       
-      if (dashboardResponse.success && dashboardResponse.data) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log('📊 Resposta do dashboard:', data);
+      
+      if (response.ok && data) {
         // Buscar links de pagamento
         const linksResponse = await this.getPaymentLinks();
         
         const managementData: ManagementData = {
-          // Dados de formas de pagamento
-          pixSales: dashboardResponse.data.sumPix || 0,
-          cardSales: dashboardResponse.data.sumCard || 0,
-          boletoSales: dashboardResponse.data.sumBoleto || 0,
-          totalSales: (dashboardResponse.data.sumPix || 0) + (dashboardResponse.data.sumCard || 0) + (dashboardResponse.data.sumBoleto || 0),
+          // Dados de formas de pagamento (valores em centavos)
+          pixSales: data.sumPix || 0,
+          cardSales: data.sumCard || 0,
+          boletoSales: data.sumBoleto || 0,
+          totalSales: (data.sumPix || 0) + (data.sumCard || 0) + (data.sumBoleto || 0),
           
           // Dados de vendas
-          totalTransactions: dashboardResponse.data.countTotal || 0,
-          averageTicket: dashboardResponse.data.ticketMedio || 0,
+          totalTransactions: data.countTotal || 0,
+          averageTicket: data.ticketMedio || 0,
           
-          // Dados de aprovação
-          pixApprovalRate: dashboardResponse.data.conversionPix || 0,
-          cardApprovalRate: dashboardResponse.data.conversionCard || 0,
-          boletoApprovalRate: dashboardResponse.data.conversionBoleto || 0,
+          // Dados de aprovação (percentuais)
+          pixApprovalRate: data.conversionPix || 0,
+          cardApprovalRate: data.conversionCard || 0,
+          boletoApprovalRate: data.conversionBoleto || 0,
           
-          // Dados de reembolsos
-          refunds: dashboardResponse.data.sumRefunded || 0,
-          chargebacks: dashboardResponse.data.sumChargedback || 0,
+          // Dados de reembolsos (valores em centavos)
+          refunds: data.sumRefunded || 0,
+          chargebacks: data.sumChargedback || 0,
           
           // Dados de links
           activeLinks: linksResponse.success ? linksResponse.data?.filter(link => link.ativo).length || 0 : 0,
-          linkSales: dashboardResponse.data.countTotal || 0, // Número total de transações (vendas)
+          linkSales: data.countTotal || 0,
+          
+          // Dados adicionais do dashboard
+          countPixTotal: data.countPixTotal || 0,
+          countPixPaid: data.countPixPaid || 0,
+          countCardTotal: data.countCardTotal || 0,
+          countCardPaid: data.countCardPaid || 0,
+          countBoletoTotal: data.countBoletoTotal || 0,
+          countBoletoPaid: data.countBoletoPaid || 0,
+          conversionPix: data.conversionPix || 0,
+          conversionCard: data.conversionCard || 0,
+          conversionBoleto: data.conversionBoleto || 0,
+          taxaAprovacao: data.taxaAprovacao || 0,
+          countRefunded: data.countRefunded || 0,
+          sumRefunded: data.sumRefunded || 0,
+          countChargedback: data.countChargedback || 0,
+          sumChargedback: data.sumChargedback || 0,
+          taxaChargeback: data.taxaChargeback || 0,
+          taxaEstorno: data.taxaEstorno || 0,
         };
 
         console.log('✅ === DADOS DE GESTÃO OBTIDOS ===');
@@ -1173,7 +1222,7 @@ class KingPayAPI {
       } else {
         return {
           success: false,
-          error: dashboardResponse.error || 'Erro ao buscar dados de gestão',
+          error: 'Erro ao buscar dados de gestão',
         };
       }
     } catch (error) {

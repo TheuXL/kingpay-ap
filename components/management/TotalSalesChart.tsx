@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.black['02'],
+    color: Colors.blue['04'],
   },
   expandButton: {
     fontSize: 18,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.black['02'],
+    color: Colors.blue['04'],
     marginBottom: 20,
   },
   chartContainer: {
@@ -80,11 +80,11 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 16,
-    color: Colors.gray['01'],
+    color: Colors.gray['01'], // Número de vendas, Ticket Médio - mantém gray-01
   },
   legendValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black['02'],
+    color: Colors.blue['04'], // Valores dos dados
   },
 });
