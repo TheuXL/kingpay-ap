@@ -15,6 +15,7 @@ import LinkAtivo from '@/images/link de pagamento/link ativo.svg';
 import InativoIcon from '@/images/link de pagamento/inativo.svg';
 import BackIcon from '@/images/icon_back.svg';
 import CriarNovoLink from '@/images/link de pagamento/Criar novo link.svg';
+import SearchIcon from '@/components/ui/SearchIcon';
 import { usePaymentLinks } from '../../hooks/usePaymentLinks';
 import PeriodFilterModal from '../../components/home/PeriodFilterModal';
 
@@ -89,12 +90,15 @@ export default function PaymentLinkScreen() {
 
           <View style={styles.searchContainer}>
             <View style={styles.searchInputContainer}>
-              <BaraDePesquisa width="100%" />
+              <BaraDePesquisa width="100%" height={50} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar links de pagamento"
                 placeholderTextColor={Colors.gray['02']}
               />
+              <View style={styles.searchIconContainer}>
+                <SearchIcon width={20} height={20} color={Colors.gray['02']} />
+              </View>
             </View>
             <TouchableOpacity 
               style={styles.filterButton}
@@ -247,6 +251,7 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flex: 1,
     justifyContent: 'center',
+    position: 'relative',
   },
   searchInput: {
     position: 'absolute',
@@ -256,6 +261,15 @@ const styles = StyleSheet.create({
     color: Colors.black['01'],
     textAlign: 'center',
     backgroundColor: 'transparent',
+    paddingRight: 50, // Espaço para o ícone
+  },
+  searchIconContainer: {
+    position: 'absolute',
+    right: 15,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   filterButton: {
     marginLeft: 16,

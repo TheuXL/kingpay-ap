@@ -1,16 +1,116 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import TotalGanhoIcon from '@/images/painel de afiliados/icon total de ganho.svg';
 import EmpresasIcon from '@/images/painel de afiliados/icon empresas indicadas.svg';
 import UltimoSaqueIcon from '@/images/painel de afiliados/utimo saque.svg';
 import CopyIcon from '@/images/painel de afiliados/Copy Icon Container.svg';
-import RecebidoIcon from '@/images/painel de afiliados/Icon recebido.svg';
 import BackIcon from '@/images/icon_back.svg';
+import { useAffiliateData } from '@/hooks/useAffiliateData';
 
 export default function AffiliatePanelScreen() {
   const router = useRouter();
+  const { 
+    affiliateCode, 
+    affiliateReport, 
+    isLoading, 
+    error, 
+    requestWithdraw 
+  } = useAffiliateData();
+
+  // Função para formatar valores em reais
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value / 100); // Converter de centavos para reais
+  };
+
+  // Função para formatar data
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  // Função para copiar link de afiliado
+  const copyAffiliateLink = () => {
+    if (affiliateCode) {
+      const link = `https://app.kingpaybr.com?ref=${affiliateCode}`;
+      // Aqui você pode implementar a funcionalidade de copiar para clipboard
+      Alert.alert('Link copiado!', 'O link de afiliado foi copiado para a área de transferência.');
+    }
+  };
+
+  // Função para solicitar transferência para carteira
+  const handleTransferToWallet = async () => {
+    if (!affiliateReport?.summary.current_balance_cents || affiliateReport.summary.current_balance_cents <= 0) {
+      Alert.alert('Saldo insuficiente', 'Você não possui saldo disponível para transferir.');
+      return;
+    }
+
+    Alert.alert(
+      'Confirmar transferência',
+      `Deseja transferir ${formatCurrency(affiliateReport.summary.current_balance_cents)} para sua carteira?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            const success = await requestWithdraw(affiliateReport.summary.current_balance_cents);
+            if (success) {
+              Alert.alert('Sucesso!', 'Transferência realizada com sucesso.');
+            } else {
+              Alert.alert('Erro', 'Erro ao realizar transferência. Tente novamente.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Mostrar loading se estiver carregando
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <BackIcon />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Painel de afiliados</Text>
+        </View>
+        <View style={[styles.scrollView, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={Colors.blue['01']} />
+          <Text style={{ marginTop: 16, color: Colors.gray['01'] }}>Carregando dados...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Mostrar erro se houver
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <BackIcon />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Painel de afiliados</Text>
+        </View>
+        <View style={[styles.scrollView, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={{ color: 'red', textAlign: 'center' }}>Erro: {error}</Text>
+          <TouchableOpacity 
+            style={{ marginTop: 16, padding: 12, backgroundColor: Colors.blue['01'], borderRadius: 8 }}
+            onPress={() => router.back()}
+          >
+            <Text style={{ color: 'white' }}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -27,8 +127,10 @@ export default function AffiliatePanelScreen() {
             <Text style={styles.balanceLabel}>Saldo disponível</Text>
             <Ionicons name="ellipsis-horizontal" size={24} color="white" />
           </View>
-          <Text style={styles.balanceValue}>R$ 341,34</Text>
-          <TouchableOpacity style={styles.transferButton}>
+          <Text style={styles.balanceValue}>
+            {affiliateReport ? formatCurrency(affiliateReport.summary.current_balance_cents) : 'R$ 0,00'}
+          </Text>
+          <TouchableOpacity style={styles.transferButton} onPress={handleTransferToWallet}>
             <Text style={styles.transferButtonText}>Transferir para carteira</Text>
             <Ionicons name="swap-horizontal" size={24} color="white" />
           </TouchableOpacity>
@@ -37,74 +139,54 @@ export default function AffiliatePanelScreen() {
           <View style={styles.statCard}>
             <TotalGanhoIcon />
             <Text style={styles.statLabel}>Total ganho</Text>
-            <Text style={styles.statValue}>R$ 3.133,45</Text>
-            <Text style={styles.statSubLabel}>Total sacado: R$ 2.792,11</Text>
+            <Text style={styles.statValue}>
+              {affiliateReport ? formatCurrency(affiliateReport.summary.total_commission_cents) : 'R$ 0,00'}
+            </Text>
+            <Text style={styles.statSubLabel}>
+              Total sacado: {affiliateReport ? formatCurrency(affiliateReport.summary.total_withdrawn_cents) : 'R$ 0,00'}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <EmpresasIcon />
             <Text style={styles.statLabel}>Empresas indicadas</Text>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statSubLabel}>Média por indicação: R$ 0,00</Text>
+            <Text style={styles.statValue}>
+              {affiliateReport ? affiliateReport.summary.total_referred_companies.toString() : '0'}
+            </Text>
+            <Text style={styles.statSubLabel}>
+              Média por indicação: {affiliateReport && affiliateReport.summary.total_referred_companies > 0 
+                ? formatCurrency(Math.round(affiliateReport.summary.total_commission_cents / affiliateReport.summary.total_referred_companies))
+                : 'R$ 0,00'}
+            </Text>
           </View>
           <View style={styles.statCard}>
             <UltimoSaqueIcon />
             <Text style={styles.statLabel}>Último saque</Text>
-            <Text style={styles.statValue}>R$ 703,09</Text>
-            <Text style={styles.statSubLabel}>Realizado em: 03/08/2025</Text>
+            <Text style={styles.statValue}>
+              {affiliateReport?.withdrawals?.list && affiliateReport.withdrawals.list.length > 0 
+                ? formatCurrency(affiliateReport.withdrawals.list[0].amount_cents) 
+                : 'R$ 0,00'}
+            </Text>
+            <Text style={styles.statSubLabel}>
+              {affiliateReport?.withdrawals?.list && affiliateReport.withdrawals.list.length > 0 
+                ? `Realizado em: ${formatDate(affiliateReport.withdrawals.list[0].created_at)}`
+                : 'Nenhum saque realizado'
+              }
+            </Text>
           </View>
         </ScrollView>
         <View style={styles.affiliateLinkCard}>
           <Text style={styles.affiliateLinkTitle}>Seu link de afiliado</Text>
           <Text style={styles.affiliateLinkDescription}>Compartilhe este link com outras empresas e ganhe comissão.</Text>
           <View style={styles.linkContainer}>
-            <Text style={styles.linkText}>https://app.kingpaybr.com?ref=REN00000</Text>
-            <TouchableOpacity style={styles.copyButton}>
+            <Text style={styles.linkText}>
+              {affiliateCode ? `https://app.kingpaybr.com?ref=${affiliateCode}` : 'Carregando...'}
+            </Text>
+            <TouchableOpacity style={styles.copyButton} onPress={copyAffiliateLink}>
               <CopyIcon />
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.historySection}>
-          <Text style={styles.historyTitle}>Histórico</Text>
-          <View style={styles.historyItem}>
-            <View style={styles.historyIconContainer}>
-              <RecebidoIcon />
-            </View>
-            <View style={styles.historyDetails}>
-              <Text style={styles.historyType}>Recebido</Text>
-              <Text style={styles.historyDescription}>Lumance Tecnologia e Pagamentos</Text>
-            </View>
-            <View style={styles.historyAmountContainer}>
-              <Text style={styles.historyDate}>Hoje</Text>
-              <Text style={styles.historyAmount}>+ R$ 308,12</Text>
-            </View>
-          </View>
-          <View style={styles.historyItem}>
-            <View style={styles.historyIconContainer}>
-              <RecebidoIcon />
-            </View>
-            <View style={styles.historyDetails}>
-              <Text style={styles.historyType}>Recebido</Text>
-              <Text style={styles.historyDescription}>Outlast</Text>
-            </View>
-            <View style={styles.historyAmountContainer}>
-              <Text style={styles.historyDate}>Ontem</Text>
-              <Text style={styles.historyAmount}>+ R$ 708,99</Text>
-            </View>
-          </View>
-          <View style={styles.historyItem}>
-            <View style={styles.historyIconContainer}>
-              <RecebidoIcon />
-            </View>
-            <View style={styles.historyDetails}>
-              <Text style={styles.historyType}>Recebido</Text>
-              <Text style={styles.historyDescription}>Meanwhile Tech</Text>
-            </View>
-            <View style={styles.historyAmountContainer}>
-              <Text style={styles.historyDate}>08 de Ago</Text>
-              <Text style={styles.historyAmount}>+ R$ 506,67</Text>
-            </View>
-          </View>
-        </View>
+        {/* Seção de histórico removida - não disponível na API de afiliados */}
       </ScrollView>
     </View>
   );
@@ -197,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     borderRadius: 12,
     padding: 20,
-    marginBottom: 40,
+    marginBottom: 130,
     height: 300,
   },
   affiliateLinkTitle: {
@@ -229,52 +311,5 @@ const styles = StyleSheet.create({
     // borderRadius: 8,
     // padding: 8,
   },
-  historySection: {
-    marginTop: 20,
-    marginBottom: 130,
-  },
-  historyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 16,
-  },
-  historyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  historyIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  historyDetails: {
-    flex: 1,
-  },
-  historyType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
-  historyDescription: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  historyAmountContainer: {
-    alignItems: 'flex-end',
-  },
-  historyDate: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  historyAmount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
+
 });

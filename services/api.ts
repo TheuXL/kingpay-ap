@@ -433,6 +433,34 @@ export interface CreateWithdrawalData {
   isPix: boolean;
 }
 
+// Interfaces para Afiliados
+export interface AffiliateCode {
+  affiliate_code: string;
+}
+
+export interface AffiliateReport {
+  success: boolean;
+  summary: {
+    current_balance_cents: number;
+    total_commission_cents: number;
+    total_referred_companies: number;
+    last_withdrawal_date: string;
+    total_withdrawn_cents: number;
+  };
+  withdrawals: {
+    list: Array<{
+      id: string;
+      created_at: string;
+      amount_cents: number;
+      status: string;
+    }>;
+  };
+}
+
+export interface AffiliateWithdrawRequest {
+  amount_cents: number;
+}
+
 // Classe principal da API
 class KingPayAPI {
   private accessToken: string | null = null;
@@ -470,7 +498,7 @@ class KingPayAPI {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const data = await this.safeJsonParse(response, 'LOGIN');
       
       console.log('📥 === RESPOSTA ===');
       console.log('Status:', response.status);
@@ -589,7 +617,19 @@ class KingPayAPI {
         body: JSON.stringify({}),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.log('❌ === ERRO AO PARSEAR JSON DO DASHBOARD ===');
+        console.log('Resposta não é JSON válido. Status:', response.status);
+        
+        // Se não conseguir fazer parse do JSON, retornar erro
+        return {
+          success: false,
+          error: 'Resposta inválida do servidor do dashboard',
+        };
+      }
       
       console.log('📥 === RESPOSTA DASHBOARD ===');
       console.log('Status:', response.status);
@@ -662,7 +702,19 @@ class KingPayAPI {
         },
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.log('❌ === ERRO AO PARSEAR JSON DA CARTEIRA ===');
+        console.log('Resposta não é JSON válido. Status:', response.status);
+        
+        // Se não conseguir fazer parse do JSON, retornar erro
+        return {
+          success: false,
+          error: 'Resposta inválida do servidor da carteira',
+        };
+      }
       
       console.log('📥 === RESPOSTA CARTEIRA ===');
       console.log('Status:', response.status);
@@ -710,9 +762,10 @@ class KingPayAPI {
   }
 
   // Método para buscar subcontas
-  async getSubcontas(): Promise<ApiResponse<Subconta[]>> {
+  async getSubcontas(limit: number = 10, offset: number = 0): Promise<ApiResponse<Subconta[]>> {
     try {
       console.log('🏢 === BUSCANDO SUBCONTAS ===');
+      console.log('📊 Parâmetros:', { limit, offset });
       
       const token = await this.getStoredToken();
       if (!token) {
@@ -720,7 +773,13 @@ class KingPayAPI {
         return { success: false, error: 'Token não encontrado' };
       }
 
-      const url = `${supabaseUrl}/functions/v1/subconta`;
+      // Adicionar parâmetros de paginação conforme documentação
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        offset: offset.toString(),
+      });
+
+      const url = `${supabaseUrl}/functions/v1/subconta?${params}`;
       
       console.log('📤 === REQUISIÇÃO SUBCONTAS ===');
       console.log('Método: GET');
@@ -738,15 +797,18 @@ class KingPayAPI {
         },
       });
 
-      const data = await response.json();
+      const data = await this.safeJsonParse(response, 'SUBCONTAS');
       
       console.log('📥 === RESPOSTA SUBCONTAS ===');
       console.log('Status:', response.status);
       console.log('Data:', JSON.stringify(data, null, 2));
 
       if (response.ok && data) {
+        // Extrair array de subcontas da resposta
+        const subcontasArray = data.data || data.subcontas || data;
+        
         // Mapear dados das subcontas
-        const subcontas: Subconta[] = Array.isArray(data) ? data.map((item: any) => ({
+        const subcontas: Subconta[] = Array.isArray(subcontasArray) ? subcontasArray.map((item: any) => ({
           id: item.id || item.sub_account_id || '',
           nome: item.name || item.subconta_nome || item.nome || '',
           banco: item.banco || '',
@@ -761,6 +823,7 @@ class KingPayAPI {
 
         console.log('✅ === SUBCONTAS OBTIDAS ===');
         console.log('🏢 Total de subcontas:', subcontas.length);
+        console.log('📋 Subcontas encontradas:', subcontas.map(s => s.nome).join(', '));
         
         return {
           success: true,
@@ -815,7 +878,7 @@ class KingPayAPI {
         },
       });
 
-      const data = await response.json();
+      const data = await this.safeJsonParse(response, 'NOTIFICAÇÕES');
       
       console.log('📥 === RESPOSTA NOTIFICAÇÕES ===');
       console.log('Status:', response.status);
@@ -2372,6 +2435,232 @@ class KingPayAPI {
     if (isValidPhone) return 'PHONE';
     if (isValidRandomKey) return 'RANDOM';
     return 'UNKNOWN';
+  }
+
+  // Método auxiliar para fazer parse seguro do JSON
+  private async safeJsonParse(response: Response, endpointName: string): Promise<any> {
+    try {
+      return await response.json();
+    } catch (parseError) {
+      console.log(`❌ === ERRO AO PARSEAR JSON DO ${endpointName} ===`);
+      console.log('Resposta não é JSON válido. Status:', response.status);
+      console.log('Headers:', Object.fromEntries(response.headers.entries()));
+      
+      // Tentar ler o texto da resposta para debug
+      try {
+        const text = await response.text();
+        console.log('Resposta como texto:', text.substring(0, 500) + '...');
+      } catch (textError) {
+        console.log('Não foi possível ler a resposta como texto');
+      }
+      
+      throw new Error(`Resposta inválida do servidor ${endpointName}`);
+    }
+  }
+
+  // ===== MÉTODOS PARA AFILIADOS =====
+
+  // Obter código de afiliado
+  async getAffiliateCode(): Promise<ApiResponse<AffiliateCode>> {
+    try {
+      console.log('🎯 === OBTENDO CÓDIGO DE AFILIADO ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return {
+          success: false,
+          error: 'Token não encontrado',
+        };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/affiliates/code`;
+      
+      console.log('📤 === REQUISIÇÃO ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await this.safeJsonParse(response, 'CÓDIGO AFILIADO');
+      
+      console.log('📥 === RESPOSTA CÓDIGO AFILIADO ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data) {
+        console.log('✅ === CÓDIGO OBTIDO ===');
+        console.log('Código:', data.code);
+        
+        return {
+          success: true,
+          data,
+        };
+      } else {
+        console.log('❌ === ERRO AO OBTER CÓDIGO ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao obter código de afiliado',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO CÓDIGO AFILIADO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Obter relatório de afiliado
+  async getAffiliateReport(): Promise<ApiResponse<AffiliateReport>> {
+    try {
+      console.log('📊 === OBTENDO RELATÓRIO DE AFILIADO ===');
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return {
+          success: false,
+          error: 'Token não encontrado',
+        };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/affiliates/report`;
+      
+      console.log('📤 === REQUISIÇÃO ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await this.safeJsonParse(response, 'RELATÓRIO AFILIADO');
+      
+      console.log('📥 === RESPOSTA RELATÓRIO AFILIADO ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok && data) {
+        console.log('✅ === RELATÓRIO OBTIDO ===');
+        console.log('Saldo disponível:', data.summary?.current_balance_cents);
+        console.log('Total ganho:', data.summary?.total_commission_cents);
+        console.log('Empresas indicadas:', data.summary?.total_referred_companies);
+        
+        return {
+          success: true,
+          data,
+        };
+      } else {
+        console.log('❌ === ERRO AO OBTER RELATÓRIO ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao obter relatório de afiliado',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO RELATÓRIO AFILIADO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Solicitar saque de comissão
+  async requestAffiliateWithdraw(amountCents: number): Promise<ApiResponse<any>> {
+    try {
+      console.log('💰 === SOLICITANDO SAQUE DE COMISSÃO ===');
+      console.log('Valor (centavos):', amountCents);
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return {
+          success: false,
+          error: 'Token não encontrado',
+        };
+      }
+
+      const url = `${supabaseUrl}/functions/v1/affiliates/withdraw`;
+      const requestBody: AffiliateWithdrawRequest = {
+        amount_cents: amountCents,
+      };
+      
+      console.log('📤 === REQUISIÇÃO ===');
+      console.log('Método: POST');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`,
+        'Content-Type': 'application/json'
+      });
+      console.log('Body:', JSON.stringify(requestBody, null, 2));
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await this.safeJsonParse(response, 'SAQUE AFILIADO');
+      
+      console.log('📥 === RESPOSTA SAQUE AFILIADO ===');
+      console.log('Status:', response.status);
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok) {
+        console.log('✅ === SAQUE SOLICITADO ===');
+        
+        return {
+          success: true,
+          data,
+        };
+      } else {
+        console.log('❌ === ERRO AO SOLICITAR SAQUE ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao solicitar saque de comissão',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO SAQUE AFILIADO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
   }
 }
 

@@ -28,7 +28,7 @@ export const useSubcontas = (): SubcontasHook => {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.getSubcontas();
+      const response = await api.getSubcontas(10, 0);
       
       if (response.success && response.data) {
         console.log('✅ Subcontas carregadas com sucesso');
