@@ -20,6 +20,17 @@ export default function FloatingMenu() {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Definir as telas principais onde o menu deve aparecer
+  const mainScreens = ['/home', '/management', '/settings'];
+  
+  // Verificar se a tela atual é uma tela principal
+  const isMainScreen = mainScreens.includes(pathname);
+  
+  // Se não for uma tela principal, não renderizar o menu
+  if (!isMainScreen) {
+    return null;
+  }
+
   const menuItems = [
     { path: '/home', text: 'Home' },
     { path: '/management', text: 'Gestão' },

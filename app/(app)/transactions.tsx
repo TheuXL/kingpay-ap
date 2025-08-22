@@ -18,7 +18,8 @@ export default function TransactionsScreen() {
   const router = useRouter();
   const { transactionMetrics, isLoading: metricsLoading, error: metricsError, refreshData, updatePeriod, currentPeriod } = useTransactionMetrics();
   const { transactions, isLoading: transactionsLoading, error: transactionsError, hasMore, refreshTransactions, loadMore, updateFilter } = useTransactions();
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [metricsFilterModalVisible, setMetricsFilterModalVisible] = useState(false);
+  const [historyFilterModalVisible, setHistoryFilterModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
 
   const formatCurrency = (value: number): string => {
@@ -63,7 +64,11 @@ export default function TransactionsScreen() {
 
   const renderHeader = () => (
     <>
-      <TransactionMetrics transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
+      <TransactionMetrics 
+        transactionMetrics={transactionMetrics} 
+        formatCurrency={formatCurrency}
+        onFilterPress={() => setMetricsFilterModalVisible(true)}
+      />
       <View style={styles.contentPadding}>
         <View style={styles.cardsRow}>
           <ThemedText style={styles.transactionsTitle}>Histórico</ThemedText>
@@ -85,7 +90,7 @@ export default function TransactionsScreen() {
           </View>
           <TouchableOpacity 
             style={styles.filterButton}
-            onPress={() => setFilterModalVisible(true)}
+            onPress={() => setHistoryFilterModalVisible(true)}
           >
             <FilterIcon width={58} height={58} />
           </TouchableOpacity>
@@ -143,7 +148,7 @@ export default function TransactionsScreen() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.1}
         refreshControl={
-          <RefreshControl refreshing={metricsLoading || transactionsLoading} onRefresh={refreshData} />
+          <RefreshControl refreshing={metricsLoading || transactionsLoading} onRefresh={refreshTransactions} />
         }
         ListFooterComponent={
           hasMore ? (
@@ -156,10 +161,23 @@ export default function TransactionsScreen() {
         contentContainerStyle={styles.flatListContent}
       />
       
+      {/* Modal para filtro das métricas */}
       <PeriodFilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
+        visible={metricsFilterModalVisible}
+        onClose={() => setMetricsFilterModalVisible(false)}
         onSelectPeriod={updatePeriod}
+        currentPeriod={currentPeriod}
+      />
+      
+      {/* Modal para filtro do histórico */}
+      <PeriodFilterModal
+        visible={historyFilterModalVisible}
+        onClose={() => setHistoryFilterModalVisible(false)}
+        onSelectPeriod={(period) => {
+          // Aqui você pode implementar a lógica para filtrar o histórico
+          console.log('Filtrando histórico por período:', period);
+          setHistoryFilterModalVisible(false);
+        }}
         currentPeriod={currentPeriod}
       />
     </View>
@@ -252,7 +270,7 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 20, // Removido
   },
   contentPadding: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     marginTop: 30,
   },
   cardsRow: {
@@ -265,7 +283,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 0,
+    paddingHorizontal: 20,
   },
   transactionIcon: {
     marginRight: 12,

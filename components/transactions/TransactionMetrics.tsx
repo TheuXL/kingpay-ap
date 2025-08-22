@@ -10,16 +10,17 @@ import { TransactionMetricsData } from '../../services/api';
 interface TransactionMetricsProps {
   transactionMetrics: TransactionMetricsData | null;
   formatCurrency: (value: number) => string;
+  onFilterPress?: () => void;
 }
 
-export default function TransactionMetrics({ transactionMetrics, formatCurrency }: TransactionMetricsProps) {
+export default function TransactionMetrics({ transactionMetrics, formatCurrency, onFilterPress }: TransactionMetricsProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Métricas de transações</Text>
-        <TouchableOpacity style={styles.periodSelector}>
+        <TouchableOpacity style={styles.periodSelector} onPress={onFilterPress}>
           <Text>{selectedPeriod}</Text>
           <Ionicons name="chevron-down" size={20} color="black" />
         </TouchableOpacity>
