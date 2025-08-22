@@ -161,7 +161,14 @@ export default function ManagementScreen() {
           </View>
           <View style={styles.movements}>
             <Text style={styles.movementsTitle}>Movimentações</Text>
-            <TouchableOpacity style={styles.movementItem}>
+            <TouchableOpacity 
+              style={styles.movementItem}
+              onPress={() => {
+                console.log('📊 === BOTÃO MOVIMENTAÇÕES PRESSIONADO ===');
+                console.log('🚀 Navegando para tela de Movimentações');
+                router.push('/(app)/movements');
+              }}
+            >
               <MovimentacaoIcon width={52} height={52} />
               <Text style={styles.movementText}>Movimentações do mês</Text>
               <View style={{ width: 52 }} />

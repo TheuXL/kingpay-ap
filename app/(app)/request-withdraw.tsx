@@ -5,7 +5,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator,
 import BackIcon from '@/images/icon_back.svg';
 import ChavesCadastradasIcon from '@/images/solicitar saque/icon chaves cadastradas.svg';
 import SetaChavesCadastradasIcon from '@/images/solicitar saque/seta chaves cadastradas.svg';
-import BotaoAvancarIcon from '@/images/solicitar saque/botão avançar.svg';
+import AvancarButton from '@/components/ui/AvancarButton';
 import { useSubcontas } from '@/hooks/useSubcontas';
 import { usePixKeys } from '@/hooks/usePixKeys';
 import { useWithdrawProcess } from '@/hooks/useWithdrawProcess';
@@ -165,7 +165,7 @@ export default function RequestWithdrawScreen() {
           onPress={handleManualPixKey}
           disabled={!selectedPixKey.trim() || validatingPix}
         >
-          <BotaoAvancarIcon width="100%" height={56} />
+          <AvancarButton />
         </TouchableOpacity>
     </View>
   );
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   button: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#00051B',
     borderRadius: 30,
     padding: 16,
     flexDirection: 'row',

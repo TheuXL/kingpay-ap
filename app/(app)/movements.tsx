@@ -1,170 +1,180 @@
 import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import MonthSelector from '../../components/movements/MonthSelector';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
-
-import SaldoIcon from '@/images/transações/Transaction Icon saldo movimentações.svg';
-import SaidaIcon from '@/images/transações/Transaction Icon saida movimentações.svg';
-import FiltroIcon from '@/images/transações/Transaction Icon filtro movimentações.svg';
-import EntradaIcon from '@/images/transações/Transaction Icon entrada movimentações.svg';
-import PesquisaIcon from '@/images/transações/Transaction Icon barra de pesquisa movimentações.svg';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, TextInput } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
+import { Colors } from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import IconEntradaMovimentacoes from '@/components/ui/IconEntradaMovimentacoes';
+import IconSaidaMovimentacoes from '@/components/ui/IconSaidaMovimentacoes';
+import IconSaldoTotalMovimentacoes from '@/components/ui/IconSaldoTotalMovimentacoes';
+import FilterIcon from '@/components/ui/FilterIcon';
 
 export default function MovementsScreen() {
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState('Janeiro');
+  const [searchText, setSearchText] = useState('');
+
+  console.log('📊 === TELA MOVIMENTAÇÕES CARREGADA ===');
+  console.log('📅 Mês selecionado:', selectedMonth);
+  console.log('🔍 Texto de busca:', searchText);
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  const handleMonthSelect = () => {
+    console.log('📅 === SELETOR DE MÊS PRESSIONADO ===');
+    // TODO: Implementar seletor de mês
+  };
+
+  const handleSearch = (text: string) => {
+    console.log('🔍 === BUSCA ATUALIZADA ===');
+    console.log('Texto:', text);
+    setSearchText(text);
+  };
+
+  const handleFilter = () => {
+    console.log('🔧 === FILTRO PRESSIONADO ===');
+    // TODO: Implementar filtros
+  };
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <BackIcon />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Movimentações</Text>
-      </View>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.subHeader}>
-          <Text style={styles.subHeaderTitle}>Movimentações</Text>
-          <MonthSelector
-            selectedMonth={selectedMonth}
-            onSelectMonth={setSelectedMonth}
-          />
-        </View>
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryItem}>
-            <View style={styles.summaryIconContainer}>
-              <EntradaIcon />
+      
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <BackIcon />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Movimentações</Text>
+            <View style={styles.headerSpacer} />
+          </View>
+          {/* Título e Seletor de Mês */}
+          <View style={styles.titleSection}>
+            <Text style={styles.title}>Movimentações</Text>
+            <TouchableOpacity style={styles.monthSelector} onPress={handleMonthSelect}>
+              <Text style={styles.monthText}>{selectedMonth}</Text>
+              <Ionicons name="chevron-down" size={16} color={Colors.gray['02']} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Card de Resumo */}
+          <View style={styles.summaryCard}>
+            {/* Entradas */}
+            <View style={styles.summaryItem}>
+              <View style={styles.summaryIconContainer}>
+                <IconEntradaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Entradas</Text>
+                <Text style={styles.summaryValue}>+ {formatCurrency(21124.56)}</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.summaryLabel}>Entradas</Text>
-              <Text style={styles.summaryValue}>+ R$ 21.124,56</Text>
+
+            {/* Saídas */}
+            <View style={styles.summaryItem}>
+              <View style={styles.summaryIconContainer}>
+                <IconSaidaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Saídas</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(16124.06)}</Text>
+              </View>
+            </View>
+
+            {/* Saldo Total */}
+            <View style={[styles.summaryItem, { marginBottom: 0 }]}>
+              <View style={styles.summaryIconContainer}>
+                <IconSaldoTotalMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Saldo total</Text>
+                <Text style={styles.summarySubtext}>Entradas menos saídas no período selecionado</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(5000.50)}</Text>
+              </View>
             </View>
           </View>
-          <View style={styles.summaryItem}>
-            <View style={styles.summaryIconContainer}>
-              <SaidaIcon />
+
+          {/* Barra de Busca e Filtro */}
+          <View style={styles.searchSection}>
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar transações"
+                value={searchText}
+                onChangeText={handleSearch}
+                placeholderTextColor={Colors.gray['01']}
+              />
+              <Ionicons 
+                name="search" 
+                size={18} 
+                color={Colors.gray['01']} 
+                style={styles.searchIcon} 
+              />
             </View>
-            <View>
-              <Text style={styles.summaryLabel}>Saídas</Text>
-              <Text style={styles.summaryValue}>R$ 16.124,06</Text>
-            </View>
+            <TouchableOpacity style={styles.filterButton} onPress={handleFilter}>
+              <FilterIcon width={54} height={55} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.summaryItem}>
-            <View style={styles.summaryIconContainer}>
-              <SaldoIcon />
-            </View>
-            <View>
-              <Text style={styles.summaryLabel}>Saldo total</Text>
-              <Text style={styles.summaryDescription}>Entradas menos saídas no período selecionado</Text>
-              <Text style={styles.summaryValue}>R$ 5.124,50</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.searchFilterContainer}>
-          <View style={styles.searchInputContainer}>
-            <PesquisaIcon />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar transações"
-            />
-          </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <FiltroIcon />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.transactionList}>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <EntradaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Entrada</Text>
-              <Text style={styles.transactionDescription}>Reserva Financeira</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
+
+          {/* Lista de Transações */}
+          <View style={styles.transactionsList}>
+            {/* Transação 1 - Entrada */}
+            <View style={styles.transactionItem}>
+              <View style={styles.transactionIcon}>
+                <IconEntradaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.transactionInfo}>
+                <Text style={styles.transactionType}>Entrada</Text>
+                <Text style={styles.transactionDescription}>Reserva Financeira</Text>
+                <Text style={styles.transactionAmount}>+ {formatCurrency(3243.56)}</Text>
+              </View>
               <Text style={styles.transactionDate}>Hoje</Text>
-              <Text style={styles.transactionAmount}>+ R$ 3.243,56</Text>
             </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <SaidaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Saída</Text>
-              <Text style={styles.transactionDescription}>Transação Gateway</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
+
+            {/* Transação 2 - Saída */}
+            <View style={styles.transactionItem}>
+              <View style={styles.transactionIcon}>
+                <IconSaidaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.transactionInfo}>
+                <Text style={styles.transactionType}>Saída</Text>
+                <Text style={styles.transactionDescription}>Transação Gateway</Text>
+                <Text style={styles.transactionAmount}>{formatCurrency(2664.45)}</Text>
+              </View>
               <Text style={styles.transactionDate}>Ontem</Text>
-              <Text style={styles.transactionAmount}>R$ 2.664,45</Text>
             </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <EntradaIcon />
+
+            {/* Transação 3 - Entrada */}
+            <View style={styles.transactionItem}>
+              <View style={styles.transactionIcon}>
+                <IconEntradaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.transactionInfo}>
+                <Text style={styles.transactionType}>Entrada</Text>
+                <Text style={styles.transactionDescription}>Venda PIX</Text>
+                <Text style={styles.transactionAmount}>+ {formatCurrency(1500.00)}</Text>
+              </View>
+              <Text style={styles.transactionDate}>15/01</Text>
             </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Entrada</Text>
-              <Text style={styles.transactionDescription}>Reserva Financeira</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
-              <Text style={styles.transactionDate}>11 de Jul</Text>
-              <Text style={styles.transactionAmount}>+ R$ 1.164,37</Text>
-            </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <EntradaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Entrada</Text>
-              <Text style={styles.transactionDescription}>Reserva Financeira</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
-              <Text style={styles.transactionDate}>11 de Jul</Text>
-              <Text style={styles.transactionAmount}>+ R$ 5.063,06</Text>
-            </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <SaidaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Saída</Text>
-              <Text style={styles.transactionDescription}>Transação Gateway</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
-              <Text style={styles.transactionDate}>9 de Jul</Text>
-              <Text style={styles.transactionAmount}>R$ 560,27</Text>
-            </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <SaidaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Saída</Text>
-              <Text style={styles.transactionDescription}>Transação Gateway</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
-              <Text style={styles.transactionDate}>7 de Jul</Text>
-              <Text style={styles.transactionAmount}>R$ 3.667,85</Text>
-            </View>
-          </View>
-          <View style={styles.transactionItem}>
-            <View style={styles.transactionIconContainer}>
-              <EntradaIcon />
-            </View>
-            <View style={styles.transactionDetails}>
-              <Text style={styles.transactionType}>Entrada</Text>
-              <Text style={styles.transactionDescription}>Reserva Financeira</Text>
-            </View>
-            <View style={styles.transactionAmountContainer}>
-              <Text style={styles.transactionDate}>6 de Jul</Text>
-              <Text style={styles.transactionAmount}>+ R$ 8.874,12</Text>
+
+            {/* Transação 4 - Saída */}
+            <View style={styles.transactionItem}>
+              <View style={styles.transactionIcon}>
+                <IconSaidaMovimentacoes width={48} height={49} />
+              </View>
+              <View style={styles.transactionInfo}>
+                <Text style={styles.transactionType}>Saída</Text>
+                <Text style={styles.transactionDescription}>Saque</Text>
+                <Text style={styles.transactionAmount}>{formatCurrency(800.00)}</Text>
+              </View>
+              <Text style={styles.transactionDate}>14/01</Text>
             </View>
           </View>
         </View>
@@ -181,48 +191,60 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingTop: 60,
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 20,
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#E0E0E0',
+    backgroundColor: Colors.white['01'],
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1E293B',
-    marginLeft: 16,
+    color: Colors.blue['04'],
+    textAlign: 'center',
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 32,
   },
   scrollView: {
     flex: 1,
   },
-  subHeader: {
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  titleSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    marginBottom: 20,
   },
-  subHeaderTitle: {
+  title: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontWeight: 'bold',
+    color: Colors.blue['04'],
   },
   monthSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    backgroundColor: Colors.white['01'],
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 20,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.gray['03'],
+  },
+  monthText: {
+    fontSize: 14,
+    color: Colors.blue['04'],
+    fontWeight: '500',
   },
   summaryCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
+    backgroundColor: Colors.white['01'],
     padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   summaryItem: {
     flexDirection: 'row',
@@ -230,92 +252,90 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   summaryIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
+  },
+
+  summaryTextContainer: {
+    flex: 1,
   },
   summaryLabel: {
-    fontSize: 16,
-    color: '#64748B',
+    fontSize: 14,
+    color: Colors.gray['01'],
+    marginBottom: 2,
+  },
+  summarySubtext: {
+    fontSize: 12,
+    color: Colors.blue['04'],
+    marginBottom: 2,
   },
   summaryValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1E293B',
+    color: Colors.blue['04'],
   },
-  summaryDescription: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  searchFilterContainer: {
+  searchSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
+    gap: 12,
   },
-  searchInputContainer: {
+  searchContainer: {
     flex: 1,
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.white['02'],
+    borderRadius: 35,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   searchInput: {
     flex: 1,
-    height: 48,
     fontSize: 16,
+    color: Colors.blue['04'],
+    backgroundColor: 'transparent',
+    paddingRight: 10,
+  },
+  searchIcon: {
     marginLeft: 8,
   },
   filterButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 12,
-    marginLeft: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  transactionList: {
-    paddingHorizontal: 20,
+  transactionsList: {
+    gap: 16,
   },
   transactionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: Colors.white['01'],
+    padding: 16,
   },
-  transactionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
+  transactionIcon: {
+    marginRight: 12,
   },
-  transactionDetails: {
+  transactionInfo: {
     flex: 1,
   },
   transactionType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontSize: 12,
+    color: Colors.gray['01'],
+    marginBottom: 2,
   },
   transactionDescription: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  transactionAmountContainer: {
-    alignItems: 'flex-end',
-  },
-  transactionDate: {
-    fontSize: 14,
-    color: '#64748B',
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.blue['04'],
+    marginBottom: 2,
   },
   transactionAmount: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontWeight: '700',
+    color: Colors.blue['04'],
+  },
+  transactionDate: {
+    fontSize: 14,
+    color: Colors.blue['04'],
   },
 });

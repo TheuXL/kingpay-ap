@@ -461,6 +461,47 @@ export interface AffiliateWithdrawRequest {
   amount_cents: number;
 }
 
+export interface Transaction {
+  id: string;
+  userId: string;
+  companyid: string;
+  clientid: string;
+  paymentmethod: string;
+  status: string;
+  success: boolean;
+  chargedamount: number;
+  netamount: number;
+  pixcode?: string;
+  cardflag?: string;
+  cardLastDigits?: string;
+  cardHolderName?: string;
+  installments?: number;
+  refused?: boolean;
+  refunded?: boolean;
+  motivoDoErro?: string;
+  description?: string;
+  date: string;
+  createdat: string;
+  updatedat: string;
+  client_email?: string;
+  client_name?: string;
+  items?: Array<{
+    title: string;
+    unitPrice: number;
+    quantity: number;
+  }>;
+}
+
+export interface TransactionsFilter {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  paymentMethod?: string;
+  companyId?: string;
+}
+
 // Classe principal da API
 class KingPayAPI {
   private accessToken: string | null = null;
@@ -986,6 +1027,102 @@ class KingPayAPI {
       }
     } catch (error) {
       console.log('💥 === ERRO DE CONEXÃO MARCAR NOTIFICAÇÃO ===');
+      console.error('Erro:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão',
+      };
+    }
+  }
+
+  // Método para buscar transações
+  async getTransactions(filter: TransactionsFilter = {}): Promise<ApiResponse<Transaction[]>> {
+    try {
+      console.log('📊 === BUSCANDO TRANSAÇÕES ===');
+      console.log('🔍 Filtros:', JSON.stringify(filter, null, 2));
+      
+      const token = await this.getStoredToken();
+      if (!token) {
+        console.log('❌ Token não encontrado');
+        return { success: false, error: 'Token não encontrado' };
+      }
+
+      // Construir query parameters
+      const params = new URLSearchParams();
+      if (filter.limit) params.append('limit', filter.limit.toString());
+      if (filter.offset) params.append('offset', filter.offset.toString());
+      if (filter.status) params.append('status', filter.status);
+      if (filter.startDate) params.append('startDate', filter.startDate);
+      if (filter.endDate) params.append('endDate', filter.endDate);
+      if (filter.paymentMethod) params.append('paymentMethod', filter.paymentMethod);
+      if (filter.companyId) params.append('companyId', filter.companyId);
+
+      const url = `${supabaseUrl}/functions/v1/transacoes?${params.toString()}`;
+      
+      console.log('📤 === REQUISIÇÃO TRANSAÇÕES ===');
+      console.log('Método: GET');
+      console.log('URL:', url);
+      console.log('Headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await this.safeJsonParse(response, 'TRANSAÇÕES');
+      
+      console.log('📥 === RESPOSTA TRANSAÇÕES ===');
+      console.log('Status:', response.status);
+      console.log('Headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Data:', JSON.stringify(data, null, 2));
+
+      if (response.ok) {
+        console.log('✅ === TRANSAÇÕES BUSCADAS COM SUCESSO ===');
+        console.log('📊 Tipo de resposta:', typeof data);
+        console.log('📊 É array?', Array.isArray(data));
+        console.log('📊 Quantidade de transações:', Array.isArray(data) ? data.length : 'N/A');
+        console.log('📊 Estrutura da resposta:', Object.keys(data || {}));
+        
+        // Verificar diferentes formatos de resposta
+        let transactions = [];
+        if (Array.isArray(data)) {
+          transactions = data;
+        } else if (data && typeof data === 'object') {
+          // Verificar se há uma propriedade que contém as transações
+          if (data.transactions && Array.isArray(data.transactions)) {
+            transactions = data.transactions;
+          } else if (data.data && Array.isArray(data.data)) {
+            transactions = data.data;
+          } else if (data.items && Array.isArray(data.items)) {
+            transactions = data.items;
+          } else {
+            // Se não encontrar array, tentar usar o objeto como uma transação única
+            transactions = [data];
+          }
+        }
+        
+        console.log('📊 Transações extraídas:', transactions.length);
+        
+        return {
+          success: true,
+          data: transactions,
+        };
+      } else {
+        console.log('❌ === ERRO AO BUSCAR TRANSAÇÕES ===');
+        console.log('Erro:', data.error || 'Erro desconhecido');
+        
+        return {
+          success: false,
+          error: data.error || 'Erro ao buscar transações',
+        };
+      }
+    } catch (error) {
+      console.log('💥 === ERRO DE CONEXÃO TRANSAÇÕES ===');
       console.error('Erro:', error);
       
       return {

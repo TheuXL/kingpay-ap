@@ -83,9 +83,9 @@ export const AntecipacoesList: React.FC<AntecipacoesListProps> = ({
         <View style={styles.transactionLeft}>
           <View style={styles.iconContainer}>
             {isEntrada ? (
-              <IconEntrada width={24} height={24} />
+              <IconEntrada width={50} height={50} />
             ) : (
-              <IconSaida width={24} height={24} />
+              <IconSaida width={50} height={50} />
             )}
           </View>
           <View style={styles.transactionInfo}>
@@ -197,7 +197,9 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
+    width: 40,
+    height: 40,
   },
   transactionInfo: {
     flex: 1,

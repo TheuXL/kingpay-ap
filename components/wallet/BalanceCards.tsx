@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import SaldoPixIcon from '../../images/carteira/Icon Saldo disponível (Pix).svg';
 import SaldoCartaoIcon from '../../images/carteira/icon Saldo disponível (Cartão).svg';
 import AReceberIcon from '../../images/carteira/icon A receber.svg';
@@ -21,6 +22,11 @@ const balanceIcons = {
 };
 
 export default function BalanceCards({ walletData, formatCurrency }: BalanceCardsProps) {
+  const router = useRouter();
+
+  const handleSolicitarSaque = () => {
+    router.push('/request-withdraw');
+  };
   const balanceData = [
     {
       type: 'Saldo disponível (Pix)' as const,
@@ -59,7 +65,7 @@ export default function BalanceCards({ walletData, formatCurrency }: BalanceCard
           </View>
           <Text style={[styles.amount, { color: card.textColor || 'white' }]}>{card.amount}</Text>
           {card.action ? (
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleSolicitarSaque}>
               <View style={styles.actionContainer}>
                 <Text style={[styles.actionText, { color: card.textColor || 'white' }]}>{card.action}</Text>
                 <SetaSolicitaIcon style={{ marginLeft: 10, marginRight: 130 }} />

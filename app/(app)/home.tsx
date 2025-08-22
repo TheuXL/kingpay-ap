@@ -120,13 +120,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white['01'],
+    backgroundColor:  Colors.white['02'],
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white['01'],
+    backgroundColor:  Colors.white['02'],
   },
   loadingText: {
     marginTop: 10,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white['01'],
+    backgroundColor: Colors.white['02'],
     paddingHorizontal: 20,
   },
   errorText: {

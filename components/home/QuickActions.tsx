@@ -31,7 +31,7 @@ export default function QuickActions() {
           style={styles.actionButton}
           onPress={() => action.screen && router.push(action.screen as any)}
         >
-          <View style={styles.iconContainer}>{action.icon}</View>
+          {action.icon}
           <Text style={styles.actionLabel}>{action.label}</Text>
         </TouchableOpacity>
       ))}
@@ -49,14 +49,9 @@ const styles = StyleSheet.create({
   actionButton: {
     alignItems: 'center',
   },
-  iconContainer: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 45,
-    marginBottom: 10,
-  },
   actionLabel: {
     fontSize: 14,
     textAlign: 'center',
+    marginTop: 10,
   },
 });

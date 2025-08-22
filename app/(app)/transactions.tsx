@@ -1,7 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { TransactionList } from '@/components/wallet/TransactionList';
-import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text, FlatList } from 'react-native';
 import { useState } from 'react';
 import TransactionMetrics from '../../components/transactions/TransactionMetrics';
 import FilterIcon from '../../images/transações/Filter Container.svg';
@@ -9,13 +8,18 @@ import BaraDePesquisa from '../../images/link de pagamento/bara de pesquisa.svg'
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useTransactionMetrics } from '../../hooks/useTransactionMetrics';
+import { useTransactions } from '../../hooks/useTransactions';
 import PeriodFilterModal from '../../components/home/PeriodFilterModal';
+import TransactionIconPix from '../../components/ui/TransactionIconPix';
+import TransactionIconCartaoAprovado from '../../components/ui/TransactionIconCartaoAprovado';
+import TransactionIconCartaoFalhado from '../../components/ui/TransactionIconCartaoFalhado';
 
 export default function TransactionsScreen() {
   const router = useRouter();
-  const transactions: any[] = []; // Array vazio - sem dados mockados
-  const { transactionMetrics, isLoading, error, refreshData, updatePeriod, currentPeriod } = useTransactionMetrics();
+  const { transactionMetrics, isLoading: metricsLoading, error: metricsError, refreshData, updatePeriod, currentPeriod } = useTransactionMetrics();
+  const { transactions, isLoading: transactionsLoading, error: transactionsError, hasMore, refreshTransactions, loadMore, updateFilter } = useTransactions();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -39,7 +43,7 @@ export default function TransactionsScreen() {
     }
   };
 
-  if (isLoading) {
+  if (metricsLoading || transactionsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.blue['01']} />
@@ -48,58 +52,109 @@ export default function TransactionsScreen() {
     );
   }
 
-  if (error) {
+  if (metricsError || transactionsError) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Erro ao carregar dados</Text>
-        <Text style={styles.errorSubtext}>{error}</Text>
+        <Text style={styles.errorSubtext}>{metricsError || transactionsError}</Text>
       </View>
     );
   }
 
+  const renderHeader = () => (
+    <>
+      <TransactionMetrics transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
+      <View style={styles.contentPadding}>
+        <View style={styles.cardsRow}>
+          <ThemedText style={styles.transactionsTitle}>Histórico</ThemedText>
+          <TouchableOpacity style={styles.viewAllContainer}>
+            <ThemedText style={styles.viewAll}>Ver tudo</ThemedText>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputWrapper}>
+            <BaraDePesquisa width="100%" height={58} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar transações"
+              placeholderTextColor="#A0A0A0"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+          <TouchableOpacity 
+            style={styles.filterButton}
+            onPress={() => setFilterModalVisible(true)}
+          >
+            <FilterIcon width={58} height={58} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </>
+  );
+
   return (
     <View style={styles.container}>
       <ScreenHeader title="Transações" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
-        }
-      >
-        <TransactionMetrics transactionMetrics={transactionMetrics} formatCurrency={formatCurrency} />
-        <View style={styles.contentPadding}>
-          <View style={styles.cardsRow}>
-            <ThemedText style={styles.transactionsTitle}>Histórico</ThemedText>
-            <TouchableOpacity style={styles.viewAllContainer}>
-              <ThemedText style={styles.viewAll}>Ver tudo</ThemedText>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputWrapper}>
-              <BaraDePesquisa width="100%" height={58} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="" //voltar para o placeholder original
-                placeholderTextColor="#A0A0A0"
-              />
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+                renderItem={({ item }) => {
+          console.log('📊 === RENDERIZANDO TRANSAÇÃO ===');
+          console.log('🆔 ID:', item.id);
+          console.log('💳 Método de pagamento:', item.paymentmethod);
+          console.log('✅ Sucesso:', item.success);
+          console.log('💰 Valor:', item.chargedamount);
+          console.log('📧 Email:', item.client_email);
+          console.log('📅 Data:', item.date);
+          console.log('📝 Descrição:', item.description);
+          console.log('📦 Items:', item.items);
+          
+          return (
+            <View style={styles.transactionItem}>
+              <View style={styles.transactionIcon}>
+                {item.paymentmethod === 'PIX' ? (
+                  <TransactionIconPix width={48} height={49} />
+                ) : item.paymentmethod === 'CARD' && item.success ? (
+                  <TransactionIconCartaoAprovado width={48} height={49} />
+                ) : (
+                  <TransactionIconCartaoFalhado width={48} height={49} />
+                )}
+              </View>
+              <View style={styles.transactionInfo}>
+                <Text style={styles.transactionTitle}>
+                  {item.items && item.items.length > 0 ? item.items[0].title : item.description || 'Transação'}
+                </Text>
+                <Text style={styles.transactionEmail}>
+                  {item.client_email || 'Cliente'}
+                </Text>
+                <Text style={styles.transactionAmount}>
+                  + {formatCurrency(item.chargedamount)}
+                </Text>
+              </View>
+              <Text style={styles.transactionDate}>
+                {formatDate(item.date)}
+              </Text>
             </View>
-            <TouchableOpacity 
-              style={styles.filterButton}
-              onPress={() => setFilterModalVisible(true)}
-            >
-              <FilterIcon width={58} height={58} />
-            </TouchableOpacity>
-          </View>
-
-          <TransactionList 
-            transactions={transactions} 
-            formatCurrency={formatCurrency}
-            formatDate={formatDate}
-          />
-        </View>
-      </ScrollView>
+          );
+        }}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.1}
+        refreshControl={
+          <RefreshControl refreshing={metricsLoading || transactionsLoading} onRefresh={refreshData} />
+        }
+        ListFooterComponent={
+          hasMore ? (
+            <View style={styles.loadingMore}>
+              <ActivityIndicator size="small" color={Colors.blue['01']} />
+              <Text style={styles.loadingMoreText}>Carregando mais...</Text>
+            </View>
+          ) : null
+        }
+        contentContainerStyle={styles.flatListContent}
+      />
       
       <PeriodFilterModal
         visible={filterModalVisible}
@@ -205,5 +260,49 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 0,
+  },
+  transactionIcon: {
+    marginRight: 12,
+  },
+  transactionInfo: {
+    flex: 1,
+  },
+  transactionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.blue['04'],
+    marginBottom: 2,
+  },
+  transactionEmail: {
+    fontSize: 14,
+    color: Colors.gray['01'],
+    marginBottom: 2,
+  },
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.blue['04'],
+  },
+  transactionDate: {
+    fontSize: 14,
+    color: Colors.blue['04'],
+  },
+  loadingMore: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  loadingMoreText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: Colors.gray['01'],
+  },
+  flatListContent: {
+    paddingBottom: 20,
   },
 });

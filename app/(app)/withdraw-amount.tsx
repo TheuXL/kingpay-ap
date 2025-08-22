@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import BackIcon from '@/images/icon_back.svg';
 import AlertaIcon from '@/images/solicitar saque/alerta.svg';
-import BotaoAvancarIcon from '@/images/solicitar saque/botão avançar.svg';
+import AvancarButton from '@/components/ui/AvancarButton';
 import { useWithdrawData } from '@/hooks/useWithdrawData';
 import { useWithdrawProcess } from '@/hooks/useWithdrawProcess';
 
@@ -181,7 +181,7 @@ export default function WithdrawAmountScreen() {
           style={styles.button}
           onPress={handleSubmit}
         >
-          <BotaoAvancarIcon width="100%" height={56} />
+          <AvancarButton />
         </TouchableOpacity>
       </View>
     </View>
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#00051B',
     borderRadius: 30,
     padding: 16,
     flexDirection: 'row',

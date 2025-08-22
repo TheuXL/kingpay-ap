@@ -1,0 +1,21 @@
+import React from 'react';
+import Svg, { Rect, Mask, G, Path } from 'react-native-svg';
+
+interface TransactionIconCartaoAprovadoProps {
+  width?: number;
+  height?: number;
+}
+
+export default function TransactionIconCartaoAprovado({ width = 48, height = 49 }: TransactionIconCartaoAprovadoProps) {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 48 49" fill="none">
+      <Rect y="0.5" width="48" height="48" rx="24" fill="#CAEECC"/>
+      <Mask id="mask0_384_3029" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="12" y="12" width="24" height="25">
+        <Rect x="12" y="12.5" width="24" height="24" fill="#D9D9D9"/>
+      </Mask>
+      <G mask="url(#mask0_384_3029)">
+        <Path d="M34 18.5V30.5C34 31.05 33.8042 31.5208 33.4125 31.9125C33.0208 32.3042 32.55 32.5 32 32.5H16C15.45 32.5 14.9792 32.3042 14.5875 31.9125C14.1958 31.5208 14 31.05 14 30.5V18.5C14 17.95 14.1958 17.4792 14.5875 17.0875C14.9792 16.6958 15.45 16.5 16 16.5H32C32.55 16.5 33.0208 16.6958 33.4125 17.0875C33.8042 17.4792 34 17.95 34 18.5ZM16 20.5H32V18.5H16V20.5ZM16 24.5V30.5H32V24.5H16Z" fill="#148430"/>
+      </G>
+    </Svg>
+  );
+}

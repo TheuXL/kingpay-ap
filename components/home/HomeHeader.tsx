@@ -73,12 +73,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   iconButton: {
-    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 20,
     marginLeft: 10,
     borderWidth: 1,
-    borderColor: Colors.gray['03'],
+    borderColor: Colors.gray['04'],
   },
   notificationDot: {
     position: 'absolute',
