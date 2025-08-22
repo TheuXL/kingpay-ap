@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl, Text, FlatList } from 'react-native';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import TransactionMetrics from '../../components/transactions/TransactionMetrics';
 import FilterIcon from '../../images/transações/Filter Container.svg';
 import BaraDePesquisa from '../../images/link de pagamento/bara de pesquisa.svg';
@@ -16,8 +17,8 @@ import TransactionIconCartaoFalhado from '../../components/ui/TransactionIconCar
 
 export default function TransactionsScreen() {
   const router = useRouter();
-  const { transactionMetrics, isLoading: metricsLoading, error: metricsError, refreshData, updatePeriod, currentPeriod } = useTransactionMetrics();
-  const { transactions, isLoading: transactionsLoading, error: transactionsError, hasMore, refreshTransactions, loadMore, updateFilter } = useTransactions();
+  const { transactionMetrics, isLoading: metricsLoading, error: metricsError, refreshData, updatePeriod: updateMetricsPeriod, currentPeriod: metricsCurrentPeriod } = useTransactionMetrics();
+  const { transactions, isLoading: transactionsLoading, error: transactionsError, hasMore, refreshTransactions, loadMore, updateFilter, updatePeriod: updateHistoryPeriod, currentPeriod: historyCurrentPeriod } = useTransactions();
   const [metricsFilterModalVisible, setMetricsFilterModalVisible] = useState(false);
   const [historyFilterModalVisible, setHistoryFilterModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -28,6 +29,28 @@ export default function TransactionsScreen() {
       currency: 'BRL',
     }).format(value / 100); // API retorna valores em centavos
   };
+
+  // Função para filtrar transações baseada no texto de busca
+  const filteredTransactions = transactions.filter(transaction => {
+    if (!searchText.trim()) return true;
+    
+    const searchLower = searchText.toLowerCase();
+    
+    // Buscar por título (items[0].title ou description)
+    const title = transaction.items && transaction.items.length > 0 
+      ? transaction.items[0].title 
+      : transaction.description || '';
+    if (title.toLowerCase().includes(searchLower)) return true;
+    
+    // Buscar por email
+    if (transaction.client_email && transaction.client_email.toLowerCase().includes(searchLower)) return true;
+    
+    // Buscar por valor (formatação brasileira)
+    const formattedValue = formatCurrency(transaction.chargedamount);
+    if (formattedValue.includes(searchText)) return true;
+    
+    return false;
+  });
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -83,10 +106,13 @@ export default function TransactionsScreen() {
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar transações"
-              placeholderTextColor="#A0A0A0"
+              placeholderTextColor={Colors.gray['01']}
               value={searchText}
               onChangeText={setSearchText}
             />
+            <TouchableOpacity style={styles.searchIconContainer}>
+              <Ionicons name="search" size={20} color={Colors.gray['01']} />
+            </TouchableOpacity>
           </View>
           <TouchableOpacity 
             style={styles.filterButton}
@@ -103,55 +129,47 @@ export default function TransactionsScreen() {
     <View style={styles.container}>
       <ScreenHeader title="Transações" />
       <FlatList
-        data={transactions}
+        data={filteredTransactions}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
-                renderItem={({ item }) => {
-          console.log('📊 === RENDERIZANDO TRANSAÇÃO ===');
-          console.log('🆔 ID:', item.id);
-          console.log('💳 Método de pagamento:', item.paymentmethod);
-          console.log('✅ Sucesso:', item.success);
-          console.log('💰 Valor:', item.chargedamount);
-          console.log('📧 Email:', item.client_email);
-          console.log('📅 Data:', item.date);
-          console.log('📝 Descrição:', item.description);
-          console.log('📦 Items:', item.items);
-          
-          return (
-            <View style={styles.transactionItem}>
-              <View style={styles.transactionIcon}>
-                {item.paymentmethod === 'PIX' ? (
-                  <TransactionIconPix width={48} height={49} />
-                ) : item.paymentmethod === 'CARD' && item.success ? (
-                  <TransactionIconCartaoAprovado width={48} height={49} />
-                ) : (
-                  <TransactionIconCartaoFalhado width={48} height={49} />
-                )}
-              </View>
-              <View style={styles.transactionInfo}>
-                <Text style={styles.transactionTitle}>
-                  {item.items && item.items.length > 0 ? item.items[0].title : item.description || 'Transação'}
-                </Text>
-                <Text style={styles.transactionEmail}>
-                  {item.client_email || 'Cliente'}
-                </Text>
-                <Text style={styles.transactionAmount}>
-                  + {formatCurrency(item.chargedamount)}
-                </Text>
-              </View>
-              <Text style={styles.transactionDate}>
-                {formatDate(item.date)}
+                renderItem={({ item }) => (
+          <View style={styles.transactionItem}>
+            <View style={styles.transactionIcon}>
+              {item.paymentmethod === 'PIX' ? (
+                <TransactionIconPix width={48} height={49} />
+              ) : item.paymentmethod === 'CARD' && item.success ? (
+                <TransactionIconCartaoAprovado width={48} height={49} />
+              ) : (
+                <TransactionIconCartaoFalhado width={48} height={49} />
+              )}
+            </View>
+            <View style={styles.transactionInfo}>
+              <Text style={styles.transactionTitle}>
+                {item.items && item.items.length > 0 ? item.items[0].title : item.description || 'Transação'}
+              </Text>
+              <Text style={styles.transactionEmail}>
+                {item.client_email || 'Cliente'}
+              </Text>
+              <Text style={styles.transactionAmount}>
+                + {formatCurrency(item.chargedamount)}
               </Text>
             </View>
-          );
-        }}
-        onEndReached={loadMore}
+            <Text style={styles.transactionDate}>
+              {formatDate(item.date)}
+            </Text>
+          </View>
+        )}
+        onEndReached={searchText.trim() ? undefined : loadMore}
         onEndReachedThreshold={0.1}
         refreshControl={
-          <RefreshControl refreshing={metricsLoading || transactionsLoading} onRefresh={refreshTransactions} />
+          <RefreshControl 
+            refreshing={transactionsLoading} 
+            onRefresh={refreshTransactions}
+            enabled={!searchText.trim()} // Desabilita refresh durante busca
+          />
         }
         ListFooterComponent={
-          hasMore ? (
+          hasMore && !searchText.trim() ? (
             <View style={styles.loadingMore}>
               <ActivityIndicator size="small" color={Colors.blue['01']} />
               <Text style={styles.loadingMoreText}>Carregando mais...</Text>
@@ -165,20 +183,16 @@ export default function TransactionsScreen() {
       <PeriodFilterModal
         visible={metricsFilterModalVisible}
         onClose={() => setMetricsFilterModalVisible(false)}
-        onSelectPeriod={updatePeriod}
-        currentPeriod={currentPeriod}
+        onSelectPeriod={updateMetricsPeriod}
+        currentPeriod={metricsCurrentPeriod}
       />
       
       {/* Modal para filtro do histórico */}
       <PeriodFilterModal
         visible={historyFilterModalVisible}
         onClose={() => setHistoryFilterModalVisible(false)}
-        onSelectPeriod={(period) => {
-          // Aqui você pode implementar a lógica para filtrar o histórico
-          console.log('Filtrando histórico por período:', period);
-          setHistoryFilterModalVisible(false);
-        }}
-        currentPeriod={currentPeriod}
+        onSelectPeriod={updateHistoryPeriod}
+        currentPeriod={historyCurrentPeriod}
       />
     </View>
   );
@@ -259,9 +273,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     paddingLeft: 55,
-    paddingRight: 20,
+    paddingRight: 50,
     fontSize: 16,
     color: '#000',
+  },
+  searchIconContainer: {
+    position: 'absolute',
+    right: 15,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    zIndex: 1,
   },
   filterButton: {
     marginLeft: 16,

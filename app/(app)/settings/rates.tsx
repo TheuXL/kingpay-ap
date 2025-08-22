@@ -12,6 +12,8 @@ import CartaoIcon from '@/images/configurações/selecionar forma de pagamento c
 import PixIcon from '@/images/configurações/selecionar forma de pagamento pix.svg';
 import CalcularIcon from '@/images/configurações/botão calcular.svg';
 import { useCompanyRates } from '@/hooks/useCompanyRates';
+import { useUserData } from '@/hooks/useUserData';
+import { api } from '@/services/api';
 
 interface LocalSimulationResult {
   taxaIntermediacao: string;
@@ -27,6 +29,7 @@ export default function RatesScreen() {
   const [transactionValue, setTransactionValue] = useState('');
   const [localSimulationResult, setLocalSimulationResult] = useState<LocalSimulationResult | null>(null);
   const { companyRates, loading: ratesLoading, error: ratesError } = useCompanyRates();
+  const { userData } = useUserData();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -62,7 +65,7 @@ export default function RatesScreen() {
     ];
   };
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     if (!transactionValue || parseFloat(transactionValue) <= 0) {
       Alert.alert('Erro', 'Por favor, insira um valor válido para a transação.');
       return;
@@ -73,24 +76,66 @@ export default function RatesScreen() {
       return;
     }
 
-    // Simulação local usando as taxas do backend
     const value = parseFloat(transactionValue);
+    const valueInCents = Math.round(value * 100); // Converter para centavos
     
-    console.log('🧮 === SIMULAÇÃO LOCAL DE TAXAS ===');
-    console.log('💰 Valor da transação:', `R$ ${value.toFixed(2)}`);
+    console.log('🧮 === SIMULANDO TAXAS VIA API ===');
+    console.log('💰 Valor da transação:', `R$ ${value.toFixed(2)} (${valueInCents} centavos)`);
     console.log('💳 Método de pagamento:', selectedPaymentMethod);
-    console.log('📊 Taxas configuradas:', companyRates);
     
-    const simulation = calculateLocalTaxes(value, selectedPaymentMethod, companyRates);
-    
-    console.log('📈 Resultado da simulação:', simulation);
-    console.log('✅ Valor líquido final:', `R$ ${simulation.valorLiquido}`);
-    console.log('🎯 Fórmula: Valor da transação - Total de taxas = Valor líquido');
-    console.log(`🎯 Cálculo: R$ ${value.toFixed(2)} - R$ ${simulation.totalTaxas} = R$ ${simulation.valorLiquido}`);
-    console.log('🧮 === FIM DA SIMULAÇÃO ===');
-    
-    // Atualizar o estado com o resultado da simulação local
-    setLocalSimulationResult(simulation);
+    try {
+      const simulationData = {
+        company_id: userData?.company || 'default', // Usar company_id do usuário
+        valor: valueInCents,
+        payment_method: selectedPaymentMethod,
+        parcelas: 1 // Sempre 1 para simulação simples
+      };
+
+      console.log('📤 === ENVIANDO DADOS PARA API ===');
+      console.log('Dados:', simulationData);
+
+      const result = await api.simulateTaxes(simulationData);
+
+      if (result.success && result.data) {
+        console.log('✅ === SIMULAÇÃO REALIZADA COM SUCESSO ===');
+        console.log('Resultado:', result.data);
+        
+        // Converter resultado para o formato local
+        // A API retorna valores em centavos, precisamos converter para reais
+        const taxaIntermediacao = parseFloat(result.data.taxaIntermediacao || '0') / 100;
+        const totalTaxas = parseFloat(result.data.totalTaxas || '0') / 100;
+        const taxaMDR = parseFloat((result.data as any).taxaMDR || '0') / 100;
+        const taxaAntecipacao = parseFloat((result.data as any).taxaAntecipacao || '0') / 100;
+        const valorLiquido = value - totalTaxas;
+        
+        const simulation: LocalSimulationResult = {
+          taxaIntermediacao: taxaIntermediacao.toFixed(2),
+          totalTaxas: totalTaxas.toFixed(2),
+          valorLiquido: valorLiquido.toFixed(2),
+          taxaMDR: taxaMDR.toFixed(2),
+          taxaAntecipacao: taxaAntecipacao.toFixed(2)
+        };
+
+        console.log('📈 Resultado processado:', simulation);
+        setLocalSimulationResult(simulation);
+      } else {
+        console.log('❌ === ERRO NA SIMULAÇÃO ===');
+        console.log('Erro:', result.error);
+        
+        // Fallback para simulação local em caso de erro
+        console.log('🔄 === USANDO SIMULAÇÃO LOCAL COMO FALLBACK ===');
+        const localSimulation = calculateLocalTaxes(value, selectedPaymentMethod, companyRates);
+        setLocalSimulationResult(localSimulation);
+      }
+    } catch (error) {
+      console.log('💥 === ERRO INESPERADO ===');
+      console.log('Erro:', error);
+      
+      // Fallback para simulação local
+      console.log('🔄 === USANDO SIMULAÇÃO LOCAL COMO FALLBACK ===');
+      const localSimulation = calculateLocalTaxes(value, selectedPaymentMethod, companyRates);
+      setLocalSimulationResult(localSimulation);
+    }
   };
 
   const calculateLocalTaxes = (valor: number, paymentMethod: 'PIX' | 'CARD' | 'BOLETO', rates: any): LocalSimulationResult => {
@@ -355,7 +400,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 50,
+    paddingTop: 60,
     paddingBottom: 10,
     backgroundColor: '#fff',
   },
@@ -384,17 +429,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   rateCard: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.white['02'],
     borderRadius: 15,
     padding: 20,
     width: '48%',
     marginBottom: 15,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
   },
   rateIcon: {
     backgroundColor: '#f0f0f0',
@@ -405,11 +445,11 @@ const styles = StyleSheet.create({
   rateName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black['01'],
+    color: Colors.gray['01'],
   },
   rateValue: {
     fontSize: 14,
-    color: Colors.gray['01'],
+    color: Colors.blue['04'],
   },
   simulatorCard: {
     backgroundColor: 'white',
@@ -422,7 +462,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   simulationResult: {
-    backgroundColor: Colors.blue['04'],
+    backgroundColor: Colors.white['02'],
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
@@ -430,7 +470,7 @@ const styles = StyleSheet.create({
   simulationTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black['01'],
+    color: Colors.blue['04'],
     marginBottom: 12,
   },
   simulationItem: {
@@ -440,12 +480,12 @@ const styles = StyleSheet.create({
   },
   simulationLabel: {
     fontSize: 14,
-    color: Colors.gray['01'],
+    color: Colors.blue['04'],
   },
   simulationValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.black['01'],
+    color: Colors.gray['01'],
   },
   simulationError: {
     backgroundColor: Colors.red['04'],
@@ -476,6 +516,7 @@ const styles = StyleSheet.create({
   },
   calculateButton: {
     marginTop: 10,
+    marginBottom: 100,
     alignSelf: 'center',
     padding: 12,
     borderRadius: 8,
